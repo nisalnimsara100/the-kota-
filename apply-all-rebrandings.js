@@ -1,0 +1,766 @@
+const fs = require('fs');
+const path = require('path');
+
+const baseDir = '/Users/nisalnimsara/GitHub/the-kota-';
+
+function getHtmlFiles(dir) {
+    let files = [];
+    const list = fs.readdirSync(dir);
+    list.forEach(file => {
+        const fullPath = path.join(dir, file);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+            if (file !== '.git' && file !== 'node_modules') {
+                files = files.concat(getHtmlFiles(fullPath));
+            }
+        } else if (file.endsWith('.html')) {
+            files.push(fullPath);
+        }
+    });
+    return files;
+}
+
+const htmlFiles = getHtmlFiles(baseDir);
+
+const youtubePath = `<path fill="currentColor" d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>`;
+const facebookPath = `<path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>`;
+const redditPath = `<path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.37-4.33 3.79.85c.08.85.79 1.51 1.65 1.51 1.1 0 1.99-.89 1.99-1.99s-.89-2-1.99-2c-.88 0-1.61.58-1.86 1.38l-4.22-.95c-.2-.04-.4.07-.47.27L10.3 8.01C7.81 8.07 5.56 8.71 3.9 9.72 3.33 8.94 2.42 8.46 1.45 8.46c-1.65 0-3 1.35-3 3 0 1.13.63 2.11 1.56 2.62-.06.3-.1.61-.1.92 0 4.14 4.7 7.5 10.5 7.5s10.5-3.36 10.5-7.5c0-.31-.04-.62-.1-.92.93-.51 1.56-1.49 1.56-2.62zM5.5 13.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>`;
+
+htmlFiles.forEach(filePath => {
+    const relativePath = path.relative(baseDir, filePath);
+    
+    // Determine depth and prefix
+    const depth = relativePath.split(path.sep).length - 1;
+    const prefix = depth > 0 ? '../'.repeat(depth) : '';
+    
+    const inlineScript = `
+<script>
+(function() {
+    const preloaderStart = Date.now();
+    const styles = {
+        '--token-97f7c01c-d33b-43e8-b4ec-1f1d7bb2db56': '#EA0813',
+        '--token-c9420d': '#C20710',
+        '--token-8a2d09': '#85050B'
+    };
+    function applyStyles() {
+        for (const [prop, val] of Object.entries(styles)) {
+            document.documentElement.style.setProperty(prop, val);
+        }
+        const badge = document.getElementById('__framer-badge-container');
+        if (badge) badge.style.setProperty('display', 'none', 'important');
+        
+        // Inject custom CSS to make social icons normally white, and red on hover
+        let styleEl = document.getElementById('kota-social-styles');
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'kota-social-styles';
+            styleEl.innerHTML = \`
+                [data-framer-name="Social Icons"] a svg,
+                [data-framer-name="Social Icons"] a svg *,
+                .framer-1s5m8nf a svg,
+                .framer-1s5m8nf a svg * {
+                    fill: #ffffff !important;
+                    color: #ffffff !important;
+                    transition: fill 0.2s ease-in-out, color 0.2s ease-in-out !important;
+                }
+                [data-framer-name="Social Icons"] a:hover svg,
+                [data-framer-name="Social Icons"] a:hover svg *,
+                .framer-1s5m8nf a:hover svg,
+                .framer-1s5m8nf a:hover svg * {
+                    fill: #EA0813 !important;
+                    color: #EA0813 !important;
+                }
+            \`;
+            document.head.appendChild(styleEl);
+        }
+        setupCounterAnimations();
+
+        // Swap sections: Experience Section before Counter Section (so it comes right after Hero Section)
+        const counterSec = document.querySelector('[data-framer-name="Counter Section"]');
+        const expSec = document.querySelector('[data-framer-name="Experience Section"]');
+        if (counterSec && expSec && counterSec.parentElement) {
+            if (counterSec.previousElementSibling !== expSec) {
+                counterSec.parentElement.insertBefore(expSec, counterSec);
+            }
+        }
+
+        // Apply scroll-reveal typography replacement
+        const c1 = document.querySelector('.framer-1x4bpdp-container');
+        const c2 = document.querySelector('.framer-p0ih05-container');
+        if (c1) {
+            applyTextToRevealSpans(c1, "");
+        }
+        if (c2) {
+            applyTextToRevealSpans(c2, "Yooow whats up people...");
+        }
+    }
+
+    function applyTextToRevealSpans(container, newText) {
+        const p = container.querySelector('p');
+        if (!p) return;
+        
+        const wordSpans = Array.from(p.childNodes).filter(node => node.nodeType === 1 && node.tagName === 'SPAN');
+        if (wordSpans.length === 0) return;
+        
+        const words = wordSpans.map(ws => {
+            const charSpans = Array.from(ws.childNodes).filter(node => node.nodeType === 1 && node.tagName === 'SPAN');
+            const spaceNode = Array.from(ws.childNodes).find(node => node.nodeType === 3 && (node.nodeValue.includes('\\u00a0') || node.nodeValue.includes(' ')));
+            return {
+                ws,
+                charSpans,
+                spaceNode
+            };
+        });
+        
+        const targetWords = newText ? newText.split(' ') : [];
+        
+        for (let i = 0; i < words.length; i++) {
+            const wordInfo = words[i];
+            if (i < targetWords.length) {
+                const targetWord = targetWords[i];
+                let charsPlaced = 0;
+                
+                for (let j = 0; j < wordInfo.charSpans.length; j++) {
+                    const span = wordInfo.charSpans[j];
+                    const char = targetWord[j];
+                    if (char !== undefined) {
+                        if (span.textContent !== char) {
+                            span.textContent = char;
+                        }
+                        span.style.setProperty('display', 'inline-block');
+                        charsPlaced++;
+                    } else {
+                        if (span.textContent !== "") {
+                            span.textContent = "";
+                        }
+                    }
+                }
+                
+                // Show space if it's not the last target word
+                const spaceVal = (i < targetWords.length - 1) ? '\\u00a0' : '';
+                if (wordInfo.spaceNode && wordInfo.spaceNode.nodeValue !== spaceVal) {
+                    wordInfo.spaceNode.nodeValue = spaceVal;
+                }
+                wordInfo.ws.style.setProperty('display', 'inline-block');
+            } else {
+                // Word is unused, hide it and all its children
+                for (let j = 0; j < wordInfo.charSpans.length; j++) {
+                    const span = wordInfo.charSpans[j];
+                    if (span.textContent !== "") {
+                        span.textContent = "";
+                    }
+                }
+                if (wordInfo.spaceNode && wordInfo.spaceNode.nodeValue !== '') {
+                    wordInfo.spaceNode.nodeValue = '';
+                }
+                wordInfo.ws.style.setProperty('display', 'none');
+            }
+        }
+    }
+
+    applyStyles();
+    
+    const prefix = '${prefix}';
+
+    const repls = [
+        { from: /John Jayden/gi, to: 'The Kota' },
+        { from: /Jayden Jones/gi, to: 'The Kota' },
+        { from: /@Jayden\\.design/gi, to: '@thekota' },
+        { from: /\\bJayden\\b/g, to: 'The Kota' },
+        { from: /\\bjayden\\b/g, to: 'the kota' },
+        { from: /web developer/gi, to: 'Sri Lankan YouTube Creator' },
+        { from: /Web-designer/g, to: 'YouTube' },
+        { from: /\\bDeveloper\\b/g, to: 'Creator' },
+        { from: /Product Designer/gi, to: 'YouTube Video Creator' },
+        { from: /UI\\/UX Designer/gi, to: 'Content Creator' },
+        { from: /Intern UI Designer/gi, to: 'Sri Lankan YouTuber' },
+        { from: /San\\x20Francisco,\\x20CA/gi, to: 'Colombo, Sri Lanka' },
+        { from: /\\bUSA\\b/g, to: '' },
+        { from: /\\b3\\x20projects\\b/g, to: 'Promotions' },
+        { from: /\\bBuy\\x20Now\\b/g, to: 'Subscribe Now' },
+        { from: /\\bView\\x20My\\x20Work\\b/g, to: 'Watch My Videos' }
+    ];
+
+    const socialIcons = {
+        youtube: {
+            href: 'https://www.youtube.com/@TheKota',
+            path: '${youtubePath}'
+        },
+        facebook: {
+            href: 'https://www.facebook.com/TheKotaReturns',
+            path: '${facebookPath}'
+        },
+        reddit: {
+            href: 'https://www.reddit.com/r/TKASYLUM',
+            path: '${redditPath}'
+        }
+    };
+
+    let counterOneStarted = false;
+    let counterTwoStarted = false;
+
+    function isInsideAnimatingContainer(node) {
+        let parent = node.parentElement;
+        while (parent) {
+            if (parent.getAttribute('data-animating') === 'true') {
+                return true;
+            }
+            parent = parent.parentElement;
+        }
+        return false;
+    }
+
+    function processCounterNode(node) {
+        if (!node) return;
+        if (isInsideAnimatingContainer(node)) return;
+
+        let current = node;
+        let counterType = null;
+        let isNumber = false;
+        
+        while (current) {
+            if (current.nodeType === 1) {
+                const name = current.getAttribute('data-framer-name');
+                if (name === 'Number Counter') {
+                    isNumber = true;
+                }
+                if (name === 'Counter One') {
+                    counterType = 'one';
+                    break;
+                }
+                if (name === 'Counter Two') {
+                    counterType = 'two';
+                    break;
+                }
+            }
+            current = current.parentElement;
+        }
+        
+        if (!counterType) return;
+        
+        if (isNumber) {
+            const targetValue = counterType === 'one' ? '650K+' : '80M+';
+            if (node.nodeType === 3) {
+                if (node.nodeValue !== targetValue) {
+                    node.nodeValue = targetValue;
+                }
+            } else if (node.nodeType === 1) {
+                if (node.tagName === 'P') {
+                    if (node.textContent !== targetValue) {
+                        node.textContent = targetValue;
+                    }
+                } else {
+                    const ps = node.querySelectorAll('p');
+                    ps.forEach(p => {
+                        if (p.textContent !== targetValue) {
+                            p.textContent = targetValue;
+                        }
+                    });
+                }
+            }
+        } else {
+            const targetLabel = counterType === 'one' ? 'YouTube Subscribers' : 'Total Channel Views';
+            if (node.nodeType === 3) {
+                const trimmed = node.nodeValue.trim();
+                if (trimmed && trimmed !== targetLabel && (trimmed.includes('Net Worth') || trimmed.includes('Success Rate') || trimmed.includes('Subscribers') || trimmed.includes('Views'))) {
+                    node.nodeValue = targetLabel;
+                }
+            } else if (node.nodeType === 1) {
+                if (node.tagName === 'P') {
+                    if (node.textContent !== targetLabel) {
+                        node.textContent = targetLabel;
+                    }
+                } else {
+                    const ps = node.querySelectorAll('p');
+                    ps.forEach(p => {
+                        if (p.textContent !== targetLabel) {
+                            p.textContent = targetLabel;
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    function processNavigationLink(node) {
+        if (!node || node.tagName !== 'A') return;
+        const href = node.getAttribute('href') || '';
+        const name = node.getAttribute('data-framer-name') || '';
+        if (href.includes('work.html') || name.toLowerCase() === 'works') {
+            node.setAttribute('href', prefix + 'index.html#work');
+        } else if (href.includes('service.html') || name.toLowerCase() === 'services') {
+            node.setAttribute('href', prefix + 'index.html#service');
+        } else if (href.includes('about.html') || name.toLowerCase() === 'about') {
+            node.setAttribute('href', prefix + 'index.html#about');
+        }
+    }
+
+    function processFavicon(node) {
+        if (!node || node.tagName !== 'LINK') return;
+        const rel = node.getAttribute('rel') || '';
+        if (rel.includes('icon')) {
+            const href = node.getAttribute('href') || '';
+            if (href.includes('BUqmbxZDP4XMeSAW74XXkInAt4.png') || href.includes('framerusercontent.com')) {
+                node.setAttribute('href', prefix + 'Assets/Hero.png');
+            }
+        }
+    }
+
+    function animateCounter(container, targetValue, suffix) {
+        const numPs = container.querySelectorAll('[data-framer-name="Number Counter"] p');
+        if (numPs.length === 0) return;
+        
+        container.setAttribute('data-animating', 'true');
+        
+        let startTimestamp = null;
+        const duration = 2000;
+        
+        function step(timestamp) {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
+            const currentValue = Math.floor(easeProgress * targetValue);
+            
+            numPs.forEach(p => {
+                p.textContent = currentValue + suffix;
+            });
+            
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                numPs.forEach(p => {
+                    p.textContent = targetValue + suffix;
+                });
+                container.setAttribute('data-animating', 'false');
+            }
+        }
+        window.requestAnimationFrame(step);
+    }
+
+    function setupCounterAnimations() {
+        const c1 = document.querySelector('[data-framer-name="Counter One"]');
+        const c2 = document.querySelector('[data-framer-name="Counter Two"]');
+        
+        if (c1 && c2 && window.IntersectionObserver) {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (!counterOneStarted) {
+                            counterOneStarted = true;
+                            animateCounter(c1, 650, 'K+');
+                        }
+                        if (!counterTwoStarted) {
+                            counterTwoStarted = true;
+                            animateCounter(c2, 80, 'M+');
+                        }
+                        io.disconnect();
+                    }
+                });
+            }, { threshold: 0.1 });
+            io.observe(c1);
+        }
+    }
+
+    function replaceText(node) {
+        if (!node) return;
+        processCounterNode(node);
+        processNavigationLink(node);
+        processFavicon(node);
+        if (isInsideAnimatingContainer(node)) return;
+
+        if (node.nodeType === 3) {
+            let val = node.nodeValue;
+            let changed = false;
+            for (const r of repls) {
+                if (r.from.test(val)) {
+                    val = val.replace(r.from, r.to);
+                    changed = true;
+                }
+            }
+            if (changed) node.nodeValue = val;
+        } else if (node.nodeType === 1) {
+            if (node.getAttribute('data-framer-name') === 'Logo') {
+                const img = node.querySelector('img');
+                if (!img) {
+                    node.innerHTML = \`<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="\` + prefix + \`Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>\`;
+                } else if (img.getAttribute('src') !== prefix + 'Assets/Kota Text.png') {
+                    img.setAttribute('src', prefix + 'Assets/Kota Text.png');
+                }
+                return;
+            }
+
+            if (node.getAttribute('data-styles-preset') === 'tOUh8Virz') {
+                const text = node.textContent || '';
+                if (text.includes("Hi, I'm") || text.includes("Jayden") || text.includes("Kota")) {
+                    node.innerHTML = 'Hi, I\\'m <span style="--framer-text-color: var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255));" class="framer-text">The Kota</span>,';
+                } else {
+                    node.innerHTML = 'Working as a <span style="--framer-text-color: var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255));" class="framer-text">Content Creator</span> on <span style="--framer-text-color: var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255));" class="framer-text">YouTube</span>';
+                }
+                return;
+            }
+            
+            if (node.className && typeof node.className === 'string') {
+                if (node.className.includes('framer-4xdbrd-container') || node.className.includes('framer-h664oy-container')) {
+                    node.style.setProperty('display', 'none', 'important');
+                    return;
+                }
+            }
+            
+            if (node.tagName === 'A') {
+                const href = node.getAttribute('href') || '';
+                if (href.includes('lemonsqueezy.com')) {
+                    node.setAttribute('href', 'https://www.youtube.com/@TheKota?sub_confirmation=1');
+                } else {
+                    let matchedSocial = null;
+                    if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
+                        matchedSocial = 'facebook';
+                    } else if (href.includes('instagram.com') || href.includes('TKASYLUM')) {
+                        matchedSocial = 'reddit';
+                    } else if (href.includes('x.com') || href.includes('youtube.com')) {
+                        matchedSocial = 'youtube';
+                    }
+                    
+                    if (matchedSocial) {
+                        node.setAttribute('href', socialIcons[matchedSocial].href);
+                        const svg = node.querySelector('svg');
+                        if (svg) {
+                            svg.innerHTML = socialIcons[matchedSocial].path;
+                        }
+                    }
+                }
+            }
+            
+            ['alt', 'title', 'placeholder'].forEach(attr => {
+                if (node.hasAttribute(attr)) {
+                    let val = node.getAttribute(attr);
+                    let changed = false;
+                    for (const r of repls) {
+                        if (r.from.test(val)) {
+                            val = val.replace(r.from, r.to);
+                            changed = true;
+                        }
+                    }
+                    if (changed) node.setAttribute(attr, val);
+                }
+            });
+            if (node.tagName === 'IMG') {
+                const src = node.getAttribute('src') || '';
+                const srcset = node.getAttribute('srcset') || '';
+                if (src.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || src.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY') ||
+                    srcset.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || srcset.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY')) {
+                    node.setAttribute('src', prefix + 'Assets/Hero.png');
+                    node.removeAttribute('srcset');
+                } else if (src.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY')) {
+                    node.setAttribute('src', prefix + 'Assets/Kota Text.png');
+                    node.removeAttribute('srcset');
+                }
+            }
+            for (let child = node.firstChild; child; child = child.nextSibling) {
+                replaceText(child);
+            }
+        }
+    }
+
+    // Preloader state tracking
+    let preloaderHidden = false;
+    let fadeOutScheduled = false;
+    function triggerFadeOut() {
+        if (fadeOutScheduled || preloaderHidden) return;
+        fadeOutScheduled = true;
+        const elapsed = Date.now() - preloaderStart;
+        const delay = Math.max(0, 4000 - elapsed);
+        setTimeout(() => {
+            const loader = document.getElementById('kota-preloader');
+            if (loader) {
+                loader.classList.add('fade-out');
+                preloaderHidden = true;
+            }
+        }, delay);
+    }
+    // Absolute fail-safe fallback (6 seconds from script execution)
+    setTimeout(triggerFadeOut, 6000);
+
+    const observer = new MutationObserver((mutations) => {
+        observer.disconnect();
+        applyStyles();
+        
+        for (const mut of mutations) {
+            if (mut.type === 'childList') {
+                for (const node of mut.addedNodes) {
+                    replaceText(node);
+                }
+            } else if (mut.type === 'attributes') {
+                const node = mut.target;
+                
+                if (node.getAttribute('data-framer-name') === 'Logo') {
+                    const img = node.querySelector('img');
+                    if (!img) {
+                        node.innerHTML = \`<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="\` + prefix + \`Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>\`;
+                    } else if (img.getAttribute('src') !== prefix + 'Assets/Kota Text.png') {
+                        img.setAttribute('src', prefix + 'Assets/Kota Text.png');
+                    }
+                }
+
+                processCounterNode(node);
+                processNavigationLink(node);
+                processFavicon(node);
+
+                if (node.className && typeof node.className === 'string') {
+                    if (node.className.includes('framer-4xdbrd-container') || node.className.includes('framer-h664oy-container')) {
+                        node.style.setProperty('display', 'none', 'important');
+                    }
+                }
+                
+                if (node.tagName === 'A' && mut.attributeName === 'href') {
+                    const href = node.getAttribute('href') || '';
+                    if (href.includes('lemonsqueezy.com')) {
+                        node.setAttribute('href', 'https://www.youtube.com/@TheKota?sub_confirmation=1');
+                    } else {
+                        let matchedSocial = null;
+                        if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
+                            matchedSocial = 'facebook';
+                        } else if (href.includes('instagram.com') || href.includes('TKASYLUM')) {
+                            matchedSocial = 'reddit';
+                        } else if (href.includes('x.com') || href.includes('youtube.com')) {
+                            matchedSocial = 'youtube';
+                        }
+                        
+                        if (matchedSocial) {
+                            node.setAttribute('href', socialIcons[matchedSocial].href);
+                            const svg = node.querySelector('svg');
+                            if (svg) {
+                                svg.innerHTML = socialIcons[matchedSocial].path;
+                            }
+                        }
+                    }
+                }
+                
+                if (node.tagName === 'IMG' && (mut.attributeName === 'src' || mut.attributeName === 'srcset')) {
+                    const src = node.getAttribute('src') || '';
+                    const srcset = node.getAttribute('srcset') || '';
+                    if (src.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || src.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY') ||
+                        srcset.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || srcset.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY')) {
+                        node.setAttribute('src', prefix + 'Assets/Hero.png');
+                        node.removeAttribute('srcset');
+                    } else if (src.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY')) {
+                        node.setAttribute('src', prefix + 'Assets/Kota Text.png');
+                        node.removeAttribute('srcset');
+                    }
+                }
+            } else if (mut.type === 'characterData') {
+                processCounterNode(mut.target);
+                
+                let val = mut.target.nodeValue;
+                let changed = false;
+                for (const r of repls) {
+                    if (r.from.test(val)) {
+                        val = val.replace(r.from, r.to);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    mut.target.nodeValue = val;
+                }
+            }
+        }
+        
+        // IDLE - Preloader handled on load event
+        
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['src', 'srcset', 'alt', 'href', 'class', 'rel'],
+            characterData: true
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['src', 'srcset', 'alt', 'href', 'class', 'rel'],
+        characterData: true
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyStyles();
+        replaceText(document.body);
+        // Fade out 1.2s after DOM is parsed to cover hydration changes
+        setTimeout(triggerFadeOut, 1200);
+    });
+    window.addEventListener('load', () => {
+        applyStyles();
+        replaceText(document.body);
+        // Trigger immediately once fully loaded
+        triggerFadeOut();
+    });
+    
+    // Global Smooth Scroll Interceptor
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (a) {
+            const href = a.getAttribute('href') || '';
+            if (href.includes('#')) {
+                const parts = href.split('#');
+                const page = parts[0];
+                const hash = parts[1];
+                const isCurrentPage = page === '' || page === 'index.html' || window.location.pathname.endsWith('/' + page) || (page === 'index.html' && window.location.pathname === '/');
+                if (isCurrentPage) {
+                    const target = document.getElementById(hash);
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+`.trim();
+
+    const preloaderCss = `
+#kota-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    opacity: 1;
+    visibility: visible;
+}
+#kota-preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+#kota-preloader .loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+#kota-preloader .loader-video {
+    width: 160px;
+    height: auto;
+}
+#kota-preloader .loader-bar {
+    width: 160px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+#kota-preloader .loader-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: #EA0813;
+    position: absolute;
+    left: -100%;
+    animation: loading-progress 1.5s infinite ease-in-out;
+}
+@keyframes loading-progress {
+    0% { left: -100%; }
+    50% { left: 0%; }
+    100% { left: 100%; }
+}
+`.trim();
+
+    const preloaderHtml = `
+<div id="kota-preloader">
+    <div class="loader-content">
+        <video class="loader-video" src="${prefix}Assets/loading.mp4" autoplay loop muted playsinline></video>
+        <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+    </div>
+</div>
+`.trim();
+
+    let content = fs.readFileSync(filePath, 'utf8');
+    const original = content;
+    
+    // Normalize newlines to Unix
+    content = content.replace(/\r\n/g, '\n');
+    
+    // 1. Insert/Replace inline script tag
+    const scriptStartIdx = content.indexOf('<script>\n(function() {\n    const styles = {');
+    if (scriptStartIdx !== -1) {
+        const scriptEndIdx = content.indexOf('</script>', scriptStartIdx);
+        if (scriptEndIdx !== -1) {
+            const fullScript = content.substring(scriptStartIdx, scriptEndIdx + '</script>'.length);
+            content = content.replace(fullScript, inlineScript);
+        }
+    } else {
+        // Insert right after the <head> tag
+        const headIdx = content.indexOf('<head>');
+        if (headIdx !== -1) {
+            content = content.substring(0, headIdx + 6) + '\n' + inlineScript + content.substring(headIdx + 6);
+        }
+    }
+
+    // 2. Insert or Replace CSS Preloader inside <head>
+    const preloaderCssRegex = /<style>\s*#kota-preloader[\s\S]*?<\/style>/i;
+    if (content.match(preloaderCssRegex)) {
+        content = content.replace(preloaderCssRegex, `<style>\n${preloaderCss}\n</style>`);
+    } else {
+        const headIdx = content.indexOf('<head>');
+        if (headIdx !== -1) {
+            content = content.substring(0, headIdx + 6) + `\n<style>\n${preloaderCss}\n</style>` + content.substring(headIdx + 6);
+        }
+    }
+
+    // 3. Insert or Replace HTML Preloader right after <body> starts
+    const preloaderHtmlRegex = /<div id="kota-preloader">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>\s*<\/div>/i;
+    if (content.match(preloaderHtmlRegex)) {
+        content = content.replace(preloaderHtmlRegex, preloaderHtml);
+    } else {
+        content = content.replace(/(<body[^>]*?>)/i, `$1\n${preloaderHtml}`);
+    }
+    
+    // 4. Perform static HTML updates (excluding counter values/labels to prevent hydration animation mismatches)
+    
+    // A. Location Replacements (using a robust whitespace/newline resilient regex for <p> blocks)
+    const locationParaRegex = /(<p\s+[^>]*?class="framer-text\s+framer-styles-preset-1c4xv0t"[^>]*?>)\s*San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA\s*(<\/p>)/gi;
+    content = content.replace(locationParaRegex, '$1Colombo, Sri Lanka$2');
+    
+    // Fallback static replacements for loose location strings
+    content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA/gi, 'Colombo, Sri Lanka');
+    content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>/gi, 'Colombo, Sri Lanka');
+    content = content.replace(/San\s+Francisco,\s+CA/gi, 'Colombo, Sri Lanka');
+
+    // B. Available for 3 projects -> Promotions
+    content = content.replace(/>\s*3\s+projects\s*</gi, '>Promotions<');
+
+    // C. Buttons
+    content = content.replace(/>\s*Buy\s+Now\s*</gi, '>Subscribe Now<');
+    content = content.replace(/href="https:\/\/ridhwanco\.lemonsqueezy\.com\/buy\/7d6fede4-e97c-4bb6-93bf-5d182947c2bc"/g, 'href="https://www.youtube.com/@TheKota?sub_confirmation=1"');
+    content = content.replace(/>\s*View\s+My\s+Work\s*</gi, '>Watch My Videos<');
+
+    // D. Favicon Source Replacement
+    content = content.replace(/https:\/\/framerusercontent\.com\/images\/BUqmbxZDP4XMeSAW74XXkInAt4\.png/g, prefix + 'Assets/Hero.png');
+
+    // E. Static Swaps for Assets
+    content = content.replace(/Sw1RXitxqpkOiWs8LmcITuaU/g, prefix + 'Assets/Hero.png');
+    content = content.replace(/W0Flr9u5hJlVmyjWEYDshQ2sPY/g, prefix + 'Assets/Hero.png');
+    content = content.replace(/rjytgkPUTbFjrXmIX6Muq6ybMLY/g, prefix + 'Assets/Kota Text.png');
+
+    // F. Static Header Logo Replacement
+    const logoRegex = /(<a\s+[^>]*?data-framer-name="Logo"[^>]*?>)([\s\S]*?)(<\/a>)/g;
+    content = content.replace(logoRegex, (match, openTag, innerHtml, closeTag) => {
+        const replacementInner = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="${prefix}Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>`;
+        return openTag + replacementInner + closeTag;
+    });
+
+    if (content !== original) {
+        fs.writeFileSync(filePath, content, 'utf8');
+        console.log(`Successfully rebranded ${relativePath}`);
+    } else {
+        console.log(`No changes made to ${relativePath}`);
+    }
+});
