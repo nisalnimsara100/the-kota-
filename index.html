@@ -108,21 +108,54 @@
             styleEl = document.createElement('style');
             styleEl.id = 'kota-social-styles';
             styleEl.innerHTML = `
-                [data-framer-name="Social Icons"] a svg,
-                [data-framer-name="Social Icons"] a svg *,
-                .framer-1s5m8nf a svg,
-                .framer-1s5m8nf a svg * {
-                    fill: #ffffff !important;
-                    color: #ffffff !important;
-                    transition: fill 0.2s ease-in-out, color 0.2s ease-in-out !important;
-                }
-                [data-framer-name="Social Icons"] a:hover svg,
-                [data-framer-name="Social Icons"] a:hover svg *,
-                .framer-1s5m8nf a:hover svg,
-                .framer-1s5m8nf a:hover svg * {
-                    fill: #EA0813 !important;
-                    color: #EA0813 !important;
-                }
+              [data-framer-name="Social Icons"] a svg,
+              [data-framer-name="Social Icons"] a svg *,
+              .framer-1s5m8nf a svg,
+              .framer-1s5m8nf a svg * {
+                fill: #ffffff !important;
+                color: #ffffff !important;
+                transition: fill 0.2s ease-in-out, color 0.2s ease-in-out !important;
+              }
+              [data-framer-name="Social Icons"] a:hover svg,
+              [data-framer-name="Social Icons"] a:hover svg *,
+              .framer-1s5m8nf a:hover svg,
+              .framer-1s5m8nf a:hover svg * {
+                fill: #EA0813 !important;
+                color: #EA0813 !important;
+              }
+              /* Ensure Icon buttons render their SVG arrow reliably and centered */
+              [data-framer-name="Icon"],
+              .framer-1nsshvn,
+              .framer-1wdch0p,
+              .framer-daxxmo {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 40px !important;
+                height: 40px !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                box-sizing: border-box !important;
+              }
+              [data-framer-name="Icon"] .svgContainer,
+              .framer-1wdch0p .svgContainer,
+              .framer-daxxmo .svgContainer {
+                width: 18px !important;
+                height: 18px !important;
+                display: block !important;
+                margin: 0 auto !important;
+              }
+              [data-framer-name="Icon"] .svgContainer svg,
+              .framer-1wdch0p .svgContainer svg,
+              .framer-daxxmo .svgContainer svg {
+                width: 18px !important;
+                height: 18px !important;
+                display: block !important;
+              }
+              /* Hide duplicate SVG children inside Icon containers (Framer often injects two variants) */
+              [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
+                display: none !important;
+              }
             `;
             document.head.appendChild(styleEl);
         }
