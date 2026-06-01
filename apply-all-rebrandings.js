@@ -3,6 +3,7 @@ const path = require('path');
 
 const baseDir = '/Users/nisalnimsara/GitHub/the-kota-';
 
+
 function getHtmlFiles(dir) {
     let files = [];
     const list = fs.readdirSync(dir);
@@ -37,12 +38,78 @@ htmlFiles.forEach(filePath => {
 <script>
 (function() {
     const preloaderStart = Date.now();
+    
+    // Floating Debug Log Overlay
+    let logEl = null;
+    function debugLog(msg) {
+        console.log("[Kota Debug]", msg);
+        if (!logEl && document.documentElement) {
+            logEl = document.createElement('div');
+            logEl.id = 'kota-debug-log';
+            logEl.style.cssText = 'position: fixed; bottom: 10px; right: 10px; z-index: 100000000; background: rgba(0, 0, 0, 0.85); color: #00ff00; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 8px; border: 1px solid #00ff00; max-width: 350px; max-height: 250px; overflow-y: auto; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.5);';
+            logEl.innerHTML = '<strong>[Kota Debug Log]</strong><br>';
+            document.documentElement.appendChild(logEl);
+        }
+        if (logEl) {
+            const p = document.createElement('div');
+            p.textContent = msg;
+            logEl.appendChild(p);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+    }
+    
+    window.addEventListener('error', (e) => {
+        debugLog('ERROR: ' + e.message);
+    });
+
+    debugLog('Script execution started in <head>');
+
+    const prefix = '${prefix}';
     const styles = {
         '--token-97f7c01c-d33b-43e8-b4ec-1f1d7bb2db56': '#EA0813',
         '--token-c9420d': '#C20710',
         '--token-8a2d09': '#85050B'
     };
+
+    const repls = [
+        { from: /John Jayden/gi, to: 'The Kota' },
+        { from: /Jayden Jones/gi, to: 'The Kota' },
+        { from: /@Jayden\\.design/gi, to: '@thekota' },
+        { from: /\\bJayden\\b/g, to: 'The Kota' },
+        { from: /\\bjayden\\b/g, to: 'the kota' },
+        { from: /web developer/gi, to: 'Sri Lankan YouTube Creator' },
+        { from: /Web-designer/g, to: 'YouTube' },
+        { from: /\\bDeveloper\\b/g, to: 'Creator' },
+        { from: /Product Designer/gi, to: 'YouTube Video Creator' },
+        { from: /UI\\/UX Designer/gi, to: 'Content Creator' },
+        { from: /Intern UI Designer/gi, to: 'Sri Lankan YouTuber' },
+        { from: /San\\x20Francisco,\\x20CA/gi, to: 'Colombo,' },
+        { from: /\\bUSA\\b/g, to: 'Sri Lanka' },
+        { from: /\\b3\\x20projects\\b/g, to: 'Promotions' },
+        { from: /\\bBuy\\x20Now\\b/g, to: 'Subscribe Now' },
+        { from: /\\bView\\x20My\\x20Work\\b/g, to: 'Kota Extra' }
+    ];
+
+    const socialIcons = {
+        youtube: {
+            href: 'https://www.youtube.com/@TheKota',
+            path: '${youtubePath}'
+        },
+        facebook: {
+            href: 'https://www.facebook.com/TheKotaReturns',
+            path: '${facebookPath}'
+        },
+        reddit: {
+            href: 'https://www.reddit.com/r/TKASYLUM',
+            path: '${redditPath}'
+        }
+    };
+
+    let counterOneStarted = false;
+    let counterTwoStarted = false;
+
     function applyStyles() {
+        debugLog('applyStyles() running...');
         for (const [prop, val] of Object.entries(styles)) {
             document.documentElement.style.setProperty(prop, val);
         }
@@ -70,8 +137,8 @@ htmlFiles.forEach(filePath => {
                     fill: #EA0813 !important;
                     color: #EA0813 !important;
                 }
-                /* Ensure Icon buttons render their SVG arrow reliably and centered */
-                [data-framer-name="Icon"],
+                /* Ensure Icon buttons inside Social Icons render their SVG reliably and centered */
+                [data-framer-name="Social Icons"] [data-framer-name="Icon"],
                 .framer-1nsshvn,
                 .framer-1wdch0p,
                 .framer-daxxmo {
@@ -84,7 +151,7 @@ htmlFiles.forEach(filePath => {
                     overflow: visible !important;
                     box-sizing: border-box !important;
                 }
-                [data-framer-name="Icon"] .svgContainer,
+                [data-framer-name="Social Icons"] [data-framer-name="Icon"] .svgContainer,
                 .framer-1wdch0p .svgContainer,
                 .framer-daxxmo .svgContainer {
                     width: 18px !important;
@@ -92,7 +159,7 @@ htmlFiles.forEach(filePath => {
                     display: block !important;
                     margin: 0 auto !important;
                 }
-                [data-framer-name="Icon"] .svgContainer svg,
+                [data-framer-name="Social Icons"] [data-framer-name="Icon"] .svgContainer svg,
                 .framer-1wdch0p .svgContainer svg,
                 .framer-daxxmo .svgContainer svg {
                     width: 18px !important;
@@ -100,7 +167,7 @@ htmlFiles.forEach(filePath => {
                     display: block !important;
                 }
                 /* Hide duplicate SVG children inside Icon containers (Framer often injects two variants) */
-                [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
+                [data-framer-name="Social Icons"] [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
                     display: none !important;
                 }
                 /* Remove the thin 'More Info' bar under the counters */
@@ -201,6 +268,27 @@ htmlFiles.forEach(filePath => {
                         padding: 16px 15px !important;
                     }
                 }
+
+                /* Add premium hover interactions and styling to Selected Work cards without breaking layout */
+                [data-framer-name="Selected Work"] a,
+                a[name="Selected Work"] {
+                    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+                    border-radius: 24px !important;
+                    box-shadow: 0 15px 40px rgba(0,0,0,0.5) !important;
+                    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.4s, box-shadow 0.4s !important;
+                    aspect-ratio: 16 / 9 !important;
+                    height: auto !important;
+                    padding: 0 !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: flex-end !important;
+                }
+                [data-framer-name="Selected Work"] a:hover,
+                a[name="Selected Work"]:hover {
+                    transform: translateY(-8px) scale(1.01) !important;
+                    box-shadow: 0 25px 50px rgba(234, 8, 19, 0.15) !important;
+                    border-color: rgba(234, 8, 19, 0.25) !important;
+                }
             \`;
             document.head.appendChild(styleEl);
         }
@@ -227,8 +315,142 @@ htmlFiles.forEach(filePath => {
             }
         }
 
+        // Ensure the Selected Work Ticker text shows the channel name and logo dynamically
+        try {
+            document.querySelectorAll('[data-framer-name*="Selected Work Ticker"] h1, [data-framer-name="Selected Work"] h1').forEach(h1 => {
+                if (!h1.innerHTML.includes('TKA SYLUM')) {
+                    h1.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 16px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 700; vertical-align: middle;">TKA SYLUM</span></span>';
+                }
+            });
+        } catch (e) {
+            // ignore
+        }
+
+        // Setup YouTube channel data, logos and 16:9 thumbnail sizing dynamically
+        setupYoutubeCards();
+
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
+    }
+
+    function setupYoutubeCards() {
+        debugLog('setupYoutubeCards() starting...');
+        const cards = [];
+        const anchors = document.querySelectorAll('a');
+        debugLog('Total <a> tags on page: ' + anchors.length);
+        anchors.forEach(a => {
+            const href = a.getAttribute('href') || '';
+            const name = a.getAttribute('data-framer-name') || '';
+            const parentName = a.parentElement ? (a.parentElement.getAttribute('data-framer-name') || '') : '';
+            if (
+                a._kotaYtId ||
+                href.includes('x---direct-mobile') ||
+                href.includes('helve-website-redesign') ||
+                href.includes('ui-ux-agency') ||
+                parentName === 'Selected Work' ||
+                name === 'Selected Work' ||
+                a.getAttribute('name') === 'Selected Work'
+            ) {
+                cards.push(a);
+            }
+        });
+        debugLog('Rebrand candidates found: ' + cards.length);
+
+        cards.forEach((card, idx) => {
+            let ytId = card._kotaYtId;
+            if (!ytId) {
+                const href = card.getAttribute('href') || '';
+                if (href.includes('x---direct-mobile') || href.includes('1') || href.includes('@TheKota') || href.includes('@TKASYLUM')) {
+                    ytId = '1';
+                } else if (href.includes('helve-website-redesign') || href.includes('2')) {
+                    ytId = '2';
+                } else if (href.includes('ui-ux-agency') || href.includes('3')) {
+                    ytId = '3';
+                }
+            }
+
+            debugLog('Card ' + idx + ' (href: ' + card.getAttribute('href') + ') mapped to ytId: ' + ytId);
+            if (!ytId) return;
+            card._kotaYtId = ytId;
+
+            let videoTitle = '';
+            let videoSubtitle = '';
+            const channelLink = 'https://www.youtube.com/@TheKota';
+            let thumbnailSrc = '';
+
+            if (ytId === '1') {
+                videoTitle = 'කාගේ කවුද මේ !? මගේ නන් නෙමේ !!';
+                videoSubtitle = '650K+ Subscribers';
+                thumbnailSrc = prefix + 'Assets/t1.jpg';
+            } else if (ytId === '2') {
+                videoTitle = 'මෙවැනි කාන්තාවන් වාසනාවන් !!';
+                videoSubtitle = '80M+ Views';
+                thumbnailSrc = prefix + 'Assets/t2.jpg';
+            } else if (ytId === '3') {
+                videoTitle = 'මේක තමා දාන අවසාන වීඩියෝ එක !!';
+                videoSubtitle = 'Try Not To Laugh';
+                thumbnailSrc = prefix + 'Assets/t3.jpg';
+            }
+
+            // Sync href & target reactively
+            if (card.getAttribute('href') !== channelLink) {
+                card.setAttribute('href', channelLink);
+            }
+            if (card.getAttribute('target') !== '_blank') {
+                card.setAttribute('target', '_blank');
+            }
+            if (card.getAttribute('rel') !== 'noopener') {
+                card.setAttribute('rel', 'noopener');
+            }
+
+            // Sync thumbnail image reactively
+            const img = card.querySelector('img');
+            if (img) {
+                if (img.getAttribute('srcset')) {
+                    img.removeAttribute('srcset');
+                }
+                if (img.getAttribute('src') !== thumbnailSrc) {
+                    img.setAttribute('src', thumbnailSrc);
+                }
+            }
+
+            // Sync paragraphs robustly by index
+            const paragraphs = card.querySelectorAll('p');
+            if (paragraphs.length >= 3) {
+                const catP = paragraphs[0];
+                const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">TKA SYLUM</span></span>';
+                if (!catP.innerHTML.includes('TKA SYLUM')) {
+                    catP.innerHTML = ytLogo;
+                }
+
+                const titleP = paragraphs[1];
+                if (titleP.textContent.trim() !== videoTitle) {
+                    titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + videoTitle + '</span>';
+                }
+
+                const dateP = paragraphs[2];
+                if (dateP.textContent.trim() !== videoSubtitle) {
+                    dateP.textContent = videoSubtitle;
+                }
+            } else {
+                // Fallback to class selectors
+                const catP = card.querySelector('.framer-oivizu p, [style*="--framer-font-size: 20px"]');
+                if (catP && !catP.innerHTML.includes('TKA SYLUM')) {
+                    const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">TKA SYLUM</span></span>';
+                    catP.innerHTML = ytLogo;
+                }
+
+                const titleP = card.querySelector('.framer-wkncrm p, [style*="--framer-font-size: 40px"]');
+                if (titleP && !titleP.textContent.includes(videoTitle)) {
+                    titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + videoTitle + '</span>';
+                }
+
+                const dateP = card.querySelector('.framer-zh8net p');
+                if (dateP && dateP.textContent !== videoSubtitle) {
+                    dateP.textContent = videoSubtitle;
+                }
+            }
+        });
     }
 
     function setupCustomScrollReveal() {
@@ -355,45 +577,6 @@ htmlFiles.forEach(filePath => {
     }
 
     applyStyles();
-    
-    const prefix = '${prefix}';
-
-    const repls = [
-        { from: /John Jayden/gi, to: 'The Kota' },
-        { from: /Jayden Jones/gi, to: 'The Kota' },
-        { from: /@Jayden\\.design/gi, to: '@thekota' },
-        { from: /\\bJayden\\b/g, to: 'The Kota' },
-        { from: /\\bjayden\\b/g, to: 'the kota' },
-        { from: /web developer/gi, to: 'Sri Lankan YouTube Creator' },
-        { from: /Web-designer/g, to: 'YouTube' },
-        { from: /\\bDeveloper\\b/g, to: 'Creator' },
-        { from: /Product Designer/gi, to: 'YouTube Video Creator' },
-        { from: /UI\\/UX Designer/gi, to: 'Content Creator' },
-        { from: /Intern UI Designer/gi, to: 'Sri Lankan YouTuber' },
-        { from: /San\\x20Francisco,\\x20CA/gi, to: 'Colombo,' },
-        { from: /\\bUSA\\b/g, to: 'Sri Lanka' },
-        { from: /\\b3\\x20projects\\b/g, to: 'Promotions' },
-        { from: /\\bBuy\\x20Now\\b/g, to: 'Subscribe Now' },
-        { from: /\\bView\\x20My\\x20Work\\b/g, to: 'Kota Extra' }
-    ];
-
-    const socialIcons = {
-        youtube: {
-            href: 'https://www.youtube.com/@TheKota',
-            path: '${youtubePath}'
-        },
-        facebook: {
-            href: 'https://www.facebook.com/TheKotaReturns',
-            path: '${facebookPath}'
-        },
-        reddit: {
-            href: 'https://www.reddit.com/r/TKASYLUM',
-            path: '${redditPath}'
-        }
-    };
-
-    let counterOneStarted = false;
-    let counterTwoStarted = false;
 
     function isInsideAnimatingContainer(node) {
         let parent = node.parentElement;
@@ -675,6 +858,10 @@ htmlFiles.forEach(filePath => {
             if (loader) {
                 loader.classList.add('fade-out');
                 preloaderHidden = true;
+                // Add hard display: none after transition completes to prevent any layout/pointer blockers
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 1000);
             }
         }, delay);
     }
@@ -802,6 +989,9 @@ htmlFiles.forEach(filePath => {
         triggerFadeOut();
     });
     
+    // Periodic synchronization interval as a fail-safe against delayed React hydration
+    setInterval(applyStyles, 1000);
+    
     // Global Smooth Scroll Interceptor
     document.addEventListener('click', (e) => {
         const a = e.target.closest('a');
@@ -851,6 +1041,7 @@ htmlFiles.forEach(filePath => {
 #kota-preloader.fade-out {
     opacity: 0;
     visibility: hidden;
+    pointer-events: none !important;
 }
 #kota-preloader .loader-content {
     display: flex;
@@ -975,6 +1166,12 @@ htmlFiles.forEach(filePath => {
         const replacementInner = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="${prefix}Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>`;
         return openTag + replacementInner + closeTag;
     });
+
+    // F.5. Static Ticker Text Replacement
+    const tickerRegex = /(<h1\s+[^>]*?class="framer-text\s+framer-styles-preset-1saos00"[^>]*?>)\s*Selected\s+work\s*(<\/h1>)/gi;
+    const tickerReplacement = '<span style="display: inline-flex; align-items: center; gap: 16px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="vertical-align: middle;">TKA SYLUM</span></span>';
+    content = content.replace(tickerRegex, `$1${tickerReplacement}$2`);
+    content = content.replace(/>\s*Selected\s+work\s*<\/h1>/gi, `>${tickerReplacement}</h1>`);
 
     if (content !== original) {
         fs.writeFileSync(filePath, content, 'utf8');
