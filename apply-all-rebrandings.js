@@ -29,11 +29,11 @@ const redditPath = `<path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 
 
 htmlFiles.forEach(filePath => {
     const relativePath = path.relative(baseDir, filePath);
-    
+
     // Determine depth and prefix
     const depth = relativePath.split(path.sep).length - 1;
     const prefix = depth > 0 ? '../'.repeat(depth) : '';
-    
+
     const inlineScript = `
 <script>
 (function() {
@@ -406,6 +406,7 @@ htmlFiles.forEach(filePath => {
         // Setup YouTube channel data, logos and 16:9 thumbnail sizing dynamically
         setupYoutubeCards();
         setupTestimonials();
+        setupAwards();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
@@ -539,6 +540,81 @@ htmlFiles.forEach(filePath => {
                 });
             })
             .catch(err => console.error("Failed to load comments.json", err));
+    }
+
+    function setupAwards() {
+        debugLog('setupAwards() starting...');
+        const awardsSection = document.querySelector('[data-framer-name="Awards Section"]');
+        if (!awardsSection) return;
+
+        if (!document.getElementById('kota-awards-css')) {
+            const style = document.createElement('style');
+            style.id = 'kota-awards-css';
+            style.innerHTML = `
+        .award - item {
+            display: flex;
+    flex - direction: column;
+    align - items: center;
+    justify - content: center;
+    gap: 8px;
+    padding: 24px;
+    text - align: center;
+    height: 100 %;
+    width: 100 %;
+}
+                .award - icon {
+    width: 100px;
+    height: 100px;
+    object- fit: contain;
+margin - bottom: 12px;
+                }
+                .award - title {
+    font - family: Rajdhani, sans - serif;
+    font - weight: 700;
+    color: #fff;
+    font - size: 26px;
+    line - height: 1.2;
+}
+                .award - desc {
+    font - family: Rajdhani, sans - serif;
+    color: rgba(255, 255, 255, 0.6);
+    font - size: 16px;
+    line - height: 1.4;
+}
+                .award - meta {
+    font - family: Rajdhani, sans - serif;
+    color: #EA0813;
+    font - weight: 700;
+    font - size: 16px;
+    margin - top: 8px;
+}
+`;
+            document.head.appendChild(style);
+        }
+
+        const awards = awardsSection.querySelectorAll('a[data-framer-name="Variant 1"], a[data-framer-name="Variant 2"]');
+        if (awards.length > 0) {
+            const firstAwardWrap = awards[0].querySelector('[data-framer-name="Wrap"]');
+            if (firstAwardWrap) {
+                firstAwardWrap.innerHTML = \`
+                   <div class="award-item">
+                     <img src="assets/silver-playbutton.png" alt="YouTube Silver Play Button" class="award-icon">
+                     <div class="award-title">YouTube Silver Play Button</div>
+                     <div class="award-desc">Awarded for surpassing 100K subscribers</div>
+                     <div class="award-meta">THE KOTA — 653K+ Subscribers</div>
+                   </div>
+                \`;
+                awards[0].removeAttribute('href');
+                awards[0].style.cursor = 'default';
+            }
+            
+            // Also ensure any other awards that might have subscriber counts are updated to 653K+
+            awards.forEach(award => {
+                if (award.innerHTML.includes('Subscribers')) {
+                    award.innerHTML = award.innerHTML.replace(/[0-9]+[KMBkmb]?\\+?\\s+Subscribers/gi, '653K+ Subscribers');
+                }
+            });
+        }
     }
 
     function setupCustomScrollReveal() {
@@ -1110,7 +1186,7 @@ htmlFiles.forEach(filePath => {
 </script>
 `.trim();
 
-    const preloaderCss = `
+const preloaderCss = `
 #kota-preloader {
     position: fixed;
     top: 0;
@@ -1164,7 +1240,7 @@ htmlFiles.forEach(filePath => {
 }
 `.trim();
 
-    const preloaderHtml = `
+const preloaderHtml = `
 <div id="kota-preloader">
     <div class="loader-content">
         <video class="loader-video" src="${prefix}Assets/loading.mp4" autoplay loop muted playsinline></video>
@@ -1173,95 +1249,95 @@ htmlFiles.forEach(filePath => {
 </div>
 `.trim();
 
-    let content = fs.readFileSync(filePath, 'utf8');
-    const original = content;
-    
-    // Normalize newlines to Unix
-    content = content.replace(/\r\n/g, '\n');
-    
-    // 1. Insert/Replace inline script tag robustly
-    const scriptRegex = /<script>\s*\(function\(\)\s*\{[\s\S]*?<\/script>/i;
-    if (content.match(scriptRegex)) {
-        content = content.replace(scriptRegex, inlineScript);
-    } else {
-        // Insert right after the <head> tag
-        const headIdx = content.indexOf('<head>');
-        if (headIdx !== -1) {
-            content = content.substring(0, headIdx + 6) + '\n' + inlineScript + content.substring(headIdx + 6);
-        }
+let content = fs.readFileSync(filePath, 'utf8');
+const original = content;
+
+// Normalize newlines to Unix
+content = content.replace(/\r\n/g, '\n');
+
+// 1. Insert/Replace inline script tag robustly
+const scriptRegex = /<script>\s*\(function\(\)\s*\{[\s\S]*?<\/script>/i;
+if (content.match(scriptRegex)) {
+    content = content.replace(scriptRegex, inlineScript);
+} else {
+    // Insert right after the <head> tag
+    const headIdx = content.indexOf('<head>');
+    if (headIdx !== -1) {
+        content = content.substring(0, headIdx + 6) + '\n' + inlineScript + content.substring(headIdx + 6);
     }
+}
 
-    // 2. Insert or Replace CSS Preloader inside <head>
-    const preloaderCssRegex = /<style>\s*#kota-preloader[\s\S]*?<\/style>/i;
-    if (content.match(preloaderCssRegex)) {
-        content = content.replace(preloaderCssRegex, `<style>\n${preloaderCss}\n</style>`);
-    } else {
-        const headIdx = content.indexOf('<head>');
-        if (headIdx !== -1) {
-            content = content.substring(0, headIdx + 6) + `\n<style>\n${preloaderCss}\n</style>` + content.substring(headIdx + 6);
-        }
+// 2. Insert or Replace CSS Preloader inside <head>
+const preloaderCssRegex = /<style>\s*#kota-preloader[\s\S]*?<\/style>/i;
+if (content.match(preloaderCssRegex)) {
+    content = content.replace(preloaderCssRegex, `<style>\n${preloaderCss}\n</style>`);
+} else {
+    const headIdx = content.indexOf('<head>');
+    if (headIdx !== -1) {
+        content = content.substring(0, headIdx + 6) + `\n<style>\n${preloaderCss}\n</style>` + content.substring(headIdx + 6);
     }
+}
 
-    // 3. Insert or Replace HTML Preloader right after <body> starts
-    const preloaderHtmlRegex = /<div id="kota-preloader">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>\s*<\/div>/i;
-    if (content.match(preloaderHtmlRegex)) {
-        content = content.replace(preloaderHtmlRegex, preloaderHtml);
-    } else {
-        content = content.replace(/(<body[^>]*?>)/i, `$1\n${preloaderHtml}`);
-    }
+// 3. Insert or Replace HTML Preloader right after <body> starts
+const preloaderHtmlRegex = /<div id="kota-preloader">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>\s*<\/div>/i;
+if (content.match(preloaderHtmlRegex)) {
+    content = content.replace(preloaderHtmlRegex, preloaderHtml);
+} else {
+    content = content.replace(/(<body[^>]*?>)/i, `$1\n${preloaderHtml}`);
+}
 
-    // 3.5. Inject GSAP CDN scripts before </body> if not present
-    if (!content.includes('gsap.min.js')) {
-        content = content.replace(/<\/body>/i, `<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>\n<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>\n</body>`);
-    }
-    
-    // 4. Perform static HTML updates (excluding counter values/labels to prevent hydration animation mismatches)
-    
-    // A. Location Replacements (using a robust whitespace/newline resilient regex for <p> blocks)
-    const locationParaRegex = /(<p\s+[^>]*?class="framer-text\s+framer-styles-preset-1c4xv0t"[^>]*?>)\s*San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA\s*(<\/p>)/gi;
-    content = content.replace(locationParaRegex, '$1Colombo,<br class="framer-text" />Sri Lanka$2');
-    
-    // Fallback static replacements for loose location strings
-    content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA/gi, 'Colombo,<br class="framer-text" />Sri Lanka');
-    content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>/gi, 'Colombo,<br class="framer-text" />Sri Lanka');
-    content = content.replace(/San\s+Francisco,\s+CA/gi, 'Colombo,');
+// 3.5. Inject GSAP CDN scripts before </body> if not present
+if (!content.includes('gsap.min.js')) {
+    content = content.replace(/<\/body>/i, `<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>\n<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>\n</body>`);
+}
 
-    // B. Available for 3 projects -> Promotions
-    content = content.replace(/>\s*3\s+projects\s*</gi, '>Promotions<');
+// 4. Perform static HTML updates (excluding counter values/labels to prevent hydration animation mismatches)
 
-    // C. Buttons
-    content = content.replace(/>\s*Buy\s+Now\s*</gi, '>Subscribe Now<');
-    content = content.replace(/href="https:\/\/ridhwanco\.lemonsqueezy\.com\/buy\/7d6fede4-e97c-4bb6-93bf-5d182947c2bc"/g, 'href="https://www.youtube.com/@TheKota"');
-    content = content.replace(/href="https:\/\/www\.youtube\.com\/@TheKota\?sub_confirmation=1"/g, 'href="https://www.youtube.com/@TheKota"');
-    content = content.replace(/>\s*View\s+My\s+Work\s*</gi, '>Kota Extra<');
-    content = content.replace(/data-framer-name="Work"\s+href="work\.html"/g, 'data-framer-name="Work" href="https://www.youtube.com/@kotaextra" target="_blank" rel="noopener"');
+// A. Location Replacements (using a robust whitespace/newline resilient regex for <p> blocks)
+const locationParaRegex = /(<p\s+[^>]*?class="framer-text\s+framer-styles-preset-1c4xv0t"[^>]*?>)\s*San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA\s*(<\/p>)/gi;
+content = content.replace(locationParaRegex, '$1Colombo,<br class="framer-text" />Sri Lanka$2');
 
-    // D. Favicon Source Replacement
-    content = content.replace(/https:\/\/framerusercontent\.com\/images\/BUqmbxZDP4XMeSAW74XXkInAt4\.png/g, prefix + 'Assets/Hero.png');
+// Fallback static replacements for loose location strings
+content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA/gi, 'Colombo,<br class="framer-text" />Sri Lanka');
+content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>/gi, 'Colombo,<br class="framer-text" />Sri Lanka');
+content = content.replace(/San\s+Francisco,\s+CA/gi, 'Colombo,');
 
-    // E. Static Swaps for Assets
-    content = content.replace(/Sw1RXitxqpkOiWs8LmcITuaU/g, prefix + 'Assets/Hero.png');
-    content = content.replace(/W0Flr9u5hJlVmyjWEYDshQ2sPY/g, prefix + 'Assets/Hero.png');
-    content = content.replace(/rjytgkPUTbFjrXmIX6Muq6ybMLY/g, prefix + 'Assets/Kota Text.png');
+// B. Available for 3 projects -> Promotions
+content = content.replace(/>\s*3\s+projects\s*</gi, '>Promotions<');
 
-    // F. Static Header Logo Replacement
-    const logoRegex = /(<a\s+[^>]*?data-framer-name="Logo"[^>]*?>)([\s\S]*?)(<\/a>)/g;
-    content = content.replace(logoRegex, (match, openTag, innerHtml, closeTag) => {
-        const replacementInner = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="${prefix}Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>`;
-        return openTag + replacementInner + closeTag;
-    });
+// C. Buttons
+content = content.replace(/>\s*Buy\s+Now\s*</gi, '>Subscribe Now<');
+content = content.replace(/href="https:\/\/ridhwanco\.lemonsqueezy\.com\/buy\/7d6fede4-e97c-4bb6-93bf-5d182947c2bc"/g, 'href="https://www.youtube.com/@TheKota"');
+content = content.replace(/href="https:\/\/www\.youtube\.com\/@TheKota\?sub_confirmation=1"/g, 'href="https://www.youtube.com/@TheKota"');
+content = content.replace(/>\s*View\s+My\s+Work\s*</gi, '>Kota Extra<');
+content = content.replace(/data-framer-name="Work"\s+href="work\.html"/g, 'data-framer-name="Work" href="https://www.youtube.com/@kotaextra" target="_blank" rel="noopener"');
 
-    // F.5. Static Ticker Text Replacement
-    const tickerRegex = /(<h1\s+[^>]*?class="framer-text\s+framer-styles-preset-1saos00"[^>]*?>)\s*Selected\s+work\s*(<\/h1>)/gi;
-    const tickerReplacement = '<span style="display: inline-flex; align-items: center; gap: 16px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="vertical-align: middle;">THE KOTA</span></span>';
-    content = content.replace(tickerRegex, `$1${tickerReplacement}$2`);
-    content = content.replace(/>\s*Selected\s+work\s*<\/h1>/gi, `>${tickerReplacement}</h1>`);
-    content = content.replace(/TKA SYLUM/g, 'THE KOTA');
+// D. Favicon Source Replacement
+content = content.replace(/https:\/\/framerusercontent\.com\/images\/BUqmbxZDP4XMeSAW74XXkInAt4\.png/g, prefix + 'Assets/Hero.png');
 
-    if (content !== original) {
-        fs.writeFileSync(filePath, content, 'utf8');
-        console.log(`Successfully rebranded ${relativePath}`);
-    } else {
-        console.log(`No changes made to ${relativePath}`);
-    }
+// E. Static Swaps for Assets
+content = content.replace(/Sw1RXitxqpkOiWs8LmcITuaU/g, prefix + 'Assets/Hero.png');
+content = content.replace(/W0Flr9u5hJlVmyjWEYDshQ2sPY/g, prefix + 'Assets/Hero.png');
+content = content.replace(/rjytgkPUTbFjrXmIX6Muq6ybMLY/g, prefix + 'Assets/Kota Text.png');
+
+// F. Static Header Logo Replacement
+const logoRegex = /(<a\s+[^>]*?data-framer-name="Logo"[^>]*?>)([\s\S]*?)(<\/a>)/g;
+content = content.replace(logoRegex, (match, openTag, innerHtml, closeTag) => {
+    const replacementInner = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="${prefix}Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>`;
+    return openTag + replacementInner + closeTag;
+});
+
+// F.5. Static Ticker Text Replacement
+const tickerRegex = /(<h1\s+[^>]*?class="framer-text\s+framer-styles-preset-1saos00"[^>]*?>)\s*Selected\s+work\s*(<\/h1>)/gi;
+const tickerReplacement = '<span style="display: inline-flex; align-items: center; gap: 16px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="vertical-align: middle;">THE KOTA</span></span>';
+content = content.replace(tickerRegex, `$1${tickerReplacement}$2`);
+content = content.replace(/>\s*Selected\s+work\s*<\/h1>/gi, `>${tickerReplacement}</h1>`);
+content = content.replace(/TKA SYLUM/g, 'THE KOTA');
+
+if (content !== original) {
+    fs.writeFileSync(filePath, content, 'utf8');
+    console.log(`Successfully rebranded ${relativePath}`);
+} else {
+    console.log(`No changes made to ${relativePath}`);
+}
 });
