@@ -117,7 +117,7 @@ htmlFiles.forEach(filePath => {
             container.style.setProperty('overflow', 'visible', 'important');
             container.style.setProperty('width', '100%', 'important');
             container.style.setProperty('height', 'auto', 'important');
-            container.style.setProperty('padding', '5vh 0', 'important');
+            container.style.setProperty('padding', '2vh 0', 'important');
             container.style.setProperty('display', 'flex', 'important');
             container.style.setProperty('align-items', 'center', 'important');
             container.style.setProperty('justify-content', 'center', 'important');
@@ -673,7 +673,13 @@ htmlFiles.forEach(filePath => {
                     const target = document.getElementById(hash);
                     if (target) {
                         e.preventDefault();
-                        target.scrollIntoView({ behavior: 'smooth' });
+                        if (window._lenis && typeof window._lenis.scrollTo === 'function') {
+                            window._lenis.scrollTo(target, { offset: 0 });
+                            try { history.pushState(null, '', '#' + hash); } catch (e) { window.location.hash = '#' + hash; }
+                        } else {
+                            target.scrollIntoView({ behavior: 'auto' });
+                            try { history.pushState(null, '', '#' + hash); } catch (e) { window.location.hash = '#' + hash; }
+                        }
                     }
                 }
             }

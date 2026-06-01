@@ -170,7 +170,7 @@
             container.style.setProperty('overflow', 'visible', 'important');
             container.style.setProperty('width', '100%', 'important');
             container.style.setProperty('height', 'auto', 'important');
-            container.style.setProperty('padding', '5vh 0', 'important');
+            container.style.setProperty('padding', '2vh 0', 'important');
             container.style.setProperty('display', 'flex', 'important');
             container.style.setProperty('align-items', 'center', 'important');
             container.style.setProperty('justify-content', 'center', 'important');
@@ -572,24 +572,34 @@
         }
     }
 
-    // Preloader state tracking
+    // Preloader state tracking — robust hide and removal
     let preloaderHidden = false;
     let fadeOutScheduled = false;
+    let fadeTimeoutId = null;
     function triggerFadeOut() {
-        if (fadeOutScheduled || preloaderHidden) return;
-        fadeOutScheduled = true;
-        const elapsed = Date.now() - preloaderStart;
-        const delay = Math.max(0, 4000 - elapsed);
-        setTimeout(() => {
-            const loader = document.getElementById('kota-preloader');
-            if (loader) {
-                loader.classList.add('fade-out');
-                preloaderHidden = true;
-            }
-        }, delay);
+      if (fadeOutScheduled || preloaderHidden) return;
+      fadeOutScheduled = true;
+      const elapsed = Date.now() - preloaderStart;
+      const delay = Math.max(0, 4000 - elapsed);
+      fadeTimeoutId = setTimeout(() => {
+        const loader = document.getElementById('kota-preloader');
+        if (loader) {
+          loader.classList.add('fade-out');
+          const onEnd = (e) => {
+            try { loader.remove(); } catch (err) {}
+            preloaderHidden = true;
+          };
+          loader.addEventListener('transitionend', onEnd, { once: true });
+          setTimeout(() => { if (!preloaderHidden) { try { loader.remove(); } catch(e){} preloaderHidden = true; } }, 1200);
+        } else {
+          preloaderHidden = true;
+        }
+      }, delay);
     }
     // Absolute fail-safe fallback (6 seconds from script execution)
-    setTimeout(triggerFadeOut, 6000);
+    const absoluteFail = setTimeout(() => {
+      triggerFadeOut();
+    }, 6000);
 
     const observer = new MutationObserver((mutations) => {
         observer.disconnect();
@@ -700,37 +710,94 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        applyStyles();
-        replaceText(document.body);
-        // Fade out 1.2s after DOM is parsed to cover hydration changes
-        setTimeout(triggerFadeOut, 1200);
+      applyStyles();
+      replaceText(document.body);
+      // Fade out shortly after DOM parsed to cover hydration changes
+      setTimeout(triggerFadeOut, 1200);
     });
     window.addEventListener('load', () => {
-        applyStyles();
-        replaceText(document.body);
-        // Trigger immediately once fully loaded
-        triggerFadeOut();
+      applyStyles();
+      replaceText(document.body);
+      // Trigger immediately once fully loaded
+      triggerFadeOut();
     });
-    
-    // Global Smooth Scroll Interceptor
-    document.addEventListener('click', (e) => {
-        const a = e.target.closest('a');
-        if (a) {
-            const href = a.getAttribute('href') || '';
-            if (href.includes('#')) {
-                const parts = href.split('#');
-                const page = parts[0];
-                const hash = parts[1];
-                const isCurrentPage = page === '' || page === 'index.html' || window.location.pathname.endsWith('/' + page) || (page === 'index.html' && window.location.pathname === '/');
-                if (isCurrentPage) {
-                    const target = document.getElementById(hash);
-                    if (target) {
-                        e.preventDefault();
-                        target.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }
+
+    // Initialize Lenis for buttery smooth scrolling
+    (function initLenis() {
+      try {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.2.0/bundled/lenis.min.js';
+        script.async = true;
+        script.onload = () => {
+          try {
+            window._lenis = new Lenis({
+              duration: 1.4,
+              // buttery ease: slow start, speed in middle, slow stop
+              easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+              lerp: 0.08,
+              smooth: true,
+              smoothWheel: true,
+              wheelMultiplier: 1.2,
+              direction: 'vertical'
+            });
+            function raf(time) {
+              window._lenis.raf(time);
+              requestAnimationFrame(raf);
             }
+            requestAnimationFrame(raf);
+
+            // Integrate with GSAP ScrollTrigger if available
+            try {
+              if (window.gsap && window.ScrollTrigger) {
+                const ST = window.ScrollTrigger;
+                ST.scrollerProxy(document.documentElement, {
+                  scrollTop(value) {
+                    if (arguments.length) window._lenis.scrollTo(value);
+                    return window.scrollY;
+                  },
+                  getBoundingClientRect() {
+                    return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+                  },
+                  pinType: document.documentElement.style.transform ? 'transform' : 'fixed'
+                });
+                window._lenis.on('scroll', () => ST.update());
+                ST.addEventListener('refresh', () => window._lenis.update && window._lenis.update());
+                setTimeout(() => ST.refresh(), 0);
+              }
+            } catch (e) { console.warn('Lenis<->ScrollTrigger integration failed', e); }
+          } catch (e) {
+            console.warn('Lenis init failed', e);
+          }
+        };
+        document.head.appendChild(script);
+      } catch (e) {}
+    })();
+
+    // Global Smooth Scroll Interceptor using Lenis when available
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if (a) {
+        const href = a.getAttribute('href') || '';
+        if (href.includes('#')) {
+          const parts = href.split('#');
+          const page = parts[0];
+          const hash = parts[1];
+          const isCurrentPage = page === '' || page === 'index.html' || window.location.pathname.endsWith('/' + page) || (page === 'index.html' && window.location.pathname === '/');
+          if (isCurrentPage) {
+            const target = document.getElementById(hash);
+            if (target) {
+              e.preventDefault();
+              if (window._lenis && typeof window._lenis.scrollTo === 'function') {
+                window._lenis.scrollTo(target, { offset: 0 });
+                try { history.pushState(null, '', '#' + hash); } catch (e) { window.location.hash = '#' + hash; }
+              } else {
+                target.scrollIntoView({ behavior: 'auto' });
+                try { history.pushState(null, '', '#' + hash); } catch (e) { window.location.hash = '#' + hash; }
+              }
+            }
+          }
         }
+      }
     });
 })();
 </script>
@@ -11878,6 +11945,18 @@
       }
     </style>
     <!-- Start of headEnd -->
+
+    <style>
+    /* Hide timeline/selected content */
+    [data-framer-name="Desktop Inactive"],
+    [data-framer-name="Desktop Active"],
+    [data-framer-name="2023 - Present"],
+    [data-framer-name="2020 - 2021"] {
+      display: none !important;
+    }
+
+    /* Global smooth scrolling for anchor navigation (handled by Lenis) */
+    </style>
 
     <!-- End of headEnd -->
   </head>
