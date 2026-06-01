@@ -91,31 +91,7 @@
 <script>
 (function() {
     const preloaderStart = Date.now();
-    
-    // Floating Debug Log Overlay
-    let logEl = null;
-    function debugLog(msg) {
-        console.log("[Kota Debug]", msg);
-        if (!logEl && document.documentElement) {
-            logEl = document.createElement('div');
-            logEl.id = 'kota-debug-log';
-            logEl.style.cssText = 'position: fixed; bottom: 10px; right: 10px; z-index: 100000000; background: rgba(0, 0, 0, 0.85); color: #00ff00; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 8px; border: 1px solid #00ff00; max-width: 350px; max-height: 250px; overflow-y: auto; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.5);';
-            logEl.innerHTML = '<strong>[Kota Debug Log]</strong><br>';
-            document.documentElement.appendChild(logEl);
-        }
-        if (logEl) {
-            const p = document.createElement('div');
-            p.textContent = msg;
-            logEl.appendChild(p);
-            logEl.scrollTop = logEl.scrollHeight;
-        }
-    }
-    
-    window.addEventListener('error', (e) => {
-        debugLog('ERROR: ' + e.message);
-    });
-
-    debugLog('Script execution started in <head>');
+    function debugLog(msg) {} // Empty debug log helper for visual cleanup
 
     const prefix = '';
     const styles = {
@@ -226,7 +202,11 @@
                 /* Remove the thin 'More Info' bar under the counters */
                 [data-framer-name="More Info"],
                 [data-framer-name="Customers"],
-                [data-framer-name="Global"] {
+                [data-framer-name="Global"],
+                [data-framer-name="FAQ"],
+                [data-framer-name="Work Process"],
+                [data-framer-name="Tech Stack"],
+                [data-framer-name="My Services"] {
                     display: none !important;
                 }
                 /* Make Counter tiles smaller, more compact & highly creative */
@@ -329,18 +309,45 @@
                     border-radius: 24px !important;
                     box-shadow: 0 15px 40px rgba(0,0,0,0.5) !important;
                     transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.4s, box-shadow 0.4s !important;
-                    aspect-ratio: 16 / 9 !important;
                     height: auto !important;
                     padding: 0 !important;
                     display: flex !important;
                     flex-direction: column !important;
-                    justify-content: flex-end !important;
+                    justify-content: flex-start !important;
+                    overflow: hidden !important;
                 }
                 [data-framer-name="Selected Work"] a:hover,
                 a[name="Selected Work"]:hover {
                     transform: translateY(-8px) scale(1.01) !important;
                     box-shadow: 0 25px 50px rgba(234, 8, 19, 0.15) !important;
                     border-color: rgba(234, 8, 19, 0.25) !important;
+                }
+
+                /* Make the image wrapper a proper 16:9 block in the flex column */
+                [data-framer-name="Selected Work"] a [data-framer-background-image-wrapper="true"],
+                a[name="Selected Work"] [data-framer-background-image-wrapper="true"] {
+                    position: relative !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    aspect-ratio: 16 / 9 !important;
+                    flex-shrink: 0 !important;
+                }
+                [data-framer-name="Selected Work"] a [data-framer-background-image-wrapper="true"] img,
+                a[name="Selected Work"] [data-framer-background-image-wrapper="true"] img {
+                    object-fit: cover !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                }
+
+                /* Reset container to flow normally below the image */
+                [data-framer-name="Selected Work"] a [data-framer-name="Container"],
+                a[name="Selected Work"] [data-framer-name="Container"] {
+                    position: relative !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    border-radius: 0 !important;
+                    background-color: rgba(10, 10, 10, 0.95) !important;
+                    flex-grow: 1 !important;
                 }
             `;
             document.head.appendChild(styleEl);
@@ -16549,6 +16556,7 @@
               </div>
             </div>
           </section>
+
           <section
             class="framer-17f0y1g"
             data-border="true"
@@ -17696,6 +17704,7 @@
               </div>
             </div>
           </section>
+          
           <section
             class="framer-1ig9cpn"
             data-border="true"
