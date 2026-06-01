@@ -103,10 +103,42 @@ htmlFiles.forEach(filePath => {
                 [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
                     display: none !important;
                 }
+                /* Remove the thin 'More Info' bar under the counters */
+                [data-framer-name="More Info"],
+                [data-framer-name="Customers"],
+                [data-framer-name="Global"] {
+                    display: none !important;
+                }
+                /* Make Counter tiles more creative */
+                [data-framer-name="Counter One"],
+                [data-framer-name="Counter Two"] {
+                    background: linear-gradient(180deg, rgba(234,8,19,0.06), rgba(0,0,0,0.35)) !important;
+                    border-radius: 18px !important;
+                    box-shadow: inset 0 1px 20px rgba(255,255,255,0.02), 0 10px 30px rgba(0,0,0,0.6) !important;
+                    padding: 24px !important;
+                    border: 1px solid rgba(255,255,255,0.03) !important;
+                    backdrop-filter: blur(6px) !important;
+                }
+                [data-framer-name="Counter One"] .framer-text,
+                [data-framer-name="Counter Two"] .framer-text {
+                    color: #fff !important;
+                }
             \`;
             document.head.appendChild(styleEl);
         }
         setupCounterAnimations();
+
+        // Ensure 'YouTube Subscribers' label is visible and simplified to 'Subscribers'
+        try {
+            document.querySelectorAll('[data-framer-component-type="RichTextContainer"]').forEach(el => {
+                if (el.innerText && /YouTube Subscribers/i.test(el.innerText)) {
+                    el.style.removeProperty('display');
+                    el.innerText = el.innerText.replace(/YouTube Subscribers/gi, 'Subscribers');
+                }
+            });
+        } catch (e) {
+            // ignore
+        }
 
         // Swap sections: Experience Section before Counter Section (so it comes right after Hero Section)
         const counterSec = document.querySelector('[data-framer-name="Counter Section"]');
