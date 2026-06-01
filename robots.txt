@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jayden-portfolio.framer.website/sitemap.xml
