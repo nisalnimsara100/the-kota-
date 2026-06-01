@@ -405,6 +405,7 @@ htmlFiles.forEach(filePath => {
 
         // Setup YouTube channel data, logos and 16:9 thumbnail sizing dynamically
         setupYoutubeCards();
+        setupTestimonials();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
@@ -412,122 +413,132 @@ htmlFiles.forEach(filePath => {
 
     function setupYoutubeCards() {
         debugLog('setupYoutubeCards() starting...');
-        const cards = [];
-        const anchors = document.querySelectorAll('a');
-        debugLog('Total <a> tags on page: ' + anchors.length);
-        anchors.forEach(a => {
-            const href = a.getAttribute('href') || '';
-            const name = a.getAttribute('data-framer-name') || '';
-            const parentName = a.parentElement ? (a.parentElement.getAttribute('data-framer-name') || '') : '';
-            if (
-                a._kotaYtId ||
-                href.includes('x---direct-mobile') ||
-                href.includes('helve-website-redesign') ||
-                href.includes('ui-ux-agency') ||
-                parentName === 'Selected Work' ||
-                name === 'Selected Work' ||
-                a.getAttribute('name') === 'Selected Work'
-            ) {
-                cards.push(a);
-            }
-        });
-        debugLog('Rebrand candidates found: ' + cards.length);
+        fetch("data/video.json")
+            .then(res => res.json())
+            .then(videos => {
+                const cards = [];
+                const anchors = document.querySelectorAll('a');
+                anchors.forEach(a => {
+                    const href = a.getAttribute('href') || '';
+                    const name = a.getAttribute('data-framer-name') || '';
+                    const parentName = a.parentElement ? (a.parentElement.getAttribute('data-framer-name') || '') : '';
+                    if (
+                        a._kotaYtId ||
+                        href.includes('x---direct-mobile') ||
+                        href.includes('helve-website-redesign') ||
+                        href.includes('ui-ux-agency') ||
+                        parentName === 'Selected Work' ||
+                        name === 'Selected Work' ||
+                        a.getAttribute('name') === 'Selected Work'
+                    ) {
+                        cards.push(a);
+                    }
+                });
 
-        cards.forEach((card, idx) => {
-            let ytId = card._kotaYtId;
-            if (!ytId) {
-                const href = card.getAttribute('href') || '';
-                if (href.includes('x---direct-mobile') || href.includes('1') || href.includes('@TheKota') || href.includes('@TKASYLUM')) {
-                    ytId = '1';
-                } else if (href.includes('helve-website-redesign') || href.includes('2')) {
-                    ytId = '2';
-                } else if (href.includes('ui-ux-agency') || href.includes('3')) {
-                    ytId = '3';
-                }
-            }
+                if (cards.length === 0) return;
 
-            debugLog('Card ' + idx + ' (href: ' + card.getAttribute('href') + ') mapped to ytId: ' + ytId);
-            if (!ytId) return;
-            card._kotaYtId = ytId;
+                const containerMap = new Map();
+                cards.forEach(card => {
+                    const parent = card.parentElement;
+                    if (!containerMap.has(parent)) {
+                        containerMap.set(parent, []);
+                    }
+                    containerMap.get(parent).push(card);
+                });
 
-            let videoTitle = '';
-            let videoSubtitle = '';
-            const channelLink = 'https://www.youtube.com/@TheKota';
-            let thumbnailSrc = '';
+                containerMap.forEach((containerCards, container) => {
+                    const template = containerCards[0].cloneNode(true);
+                    
+                    containerCards.forEach(c => c.remove());
 
-            if (ytId === '1') {
-                videoTitle = 'කාගේ කවුද මේ !? මගේ නන් නෙමේ !!';
-                videoSubtitle = '650K+ Subscribers';
-                thumbnailSrc = prefix + 'Assets/t1.jpg';
-            } else if (ytId === '2') {
-                videoTitle = 'මෙවැනි කාන්තාවන් වාසනාවන් !!';
-                videoSubtitle = '80M+ Views';
-                thumbnailSrc = prefix + 'Assets/t2.jpg';
-            } else if (ytId === '3') {
-                videoTitle = 'මේක තමා දාන අවසාන වීඩියෝ එක !!';
-                videoSubtitle = 'Try Not To Laugh';
-                thumbnailSrc = prefix + 'Assets/t3.jpg';
-            }
+                    videos.forEach(video => {
+                        const newCard = template.cloneNode(true);
 
-            // Sync href & target reactively
-            if (card.getAttribute('href') !== channelLink) {
-                card.setAttribute('href', channelLink);
-            }
-            if (card.getAttribute('target') !== '_blank') {
-                card.setAttribute('target', '_blank');
-            }
-            if (card.getAttribute('rel') !== 'noopener') {
-                card.setAttribute('rel', 'noopener');
-            }
+                        newCard.addEventListener("click", (e) => {
+                            e.preventDefault();
+                            window.open(video.youtube, "_blank", "noopener,noreferrer");
+                        });
 
-            // Sync thumbnail image reactively
-            const img = card.querySelector('img');
-            if (img) {
-                if (img.getAttribute('srcset')) {
-                    img.removeAttribute('srcset');
-                }
-                if (img.getAttribute('src') !== thumbnailSrc) {
-                    img.setAttribute('src', thumbnailSrc);
-                }
-            }
+                        newCard.setAttribute('href', video.youtube);
+                        newCard.setAttribute('target', '_blank');
+                        newCard.setAttribute('rel', 'noopener');
 
-            // Sync paragraphs robustly by index
-            const paragraphs = card.querySelectorAll('p');
-            if (paragraphs.length >= 3) {
-                const catP = paragraphs[0];
-                const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">THE KOTA</span></span>';
-                if (!catP.innerHTML.includes('THE KOTA')) {
-                    catP.innerHTML = ytLogo;
-                }
+                        const img = newCard.querySelector('img');
+                        if (img) {
+                            if (img.getAttribute('srcset')) img.removeAttribute('srcset');
+                            img.setAttribute('src', video.thumbnail);
+                        }
 
-                const titleP = paragraphs[1];
-                if (titleP.textContent.trim() !== videoTitle) {
-                    titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + videoTitle + '</span>';
-                }
+                        const paragraphs = newCard.querySelectorAll('p');
+                        if (paragraphs.length >= 3) {
+                            const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">' + video.channel + '</span></span>';
+                            paragraphs[0].innerHTML = ytLogo;
+                            paragraphs[1].innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
+                        } else {
+                            const catP = newCard.querySelector('.framer-oivizu p, [style*="--framer-font-size: 20px"]');
+                            if (catP) {
+                                const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">' + video.channel + '</span></span>';
+                                catP.innerHTML = ytLogo;
+                            }
+                            const titleP = newCard.querySelector('.framer-wkncrm p, [style*="--framer-font-size: 40px"]');
+                            if (titleP) {
+                                titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
+                            }
+                        }
+                        
+                        container.appendChild(newCard);
+                    });
+                });
+            })
+            .catch(err => console.error("Failed to load video.json", err));
+    }
 
-                const dateP = paragraphs[2];
-                if (dateP.textContent.trim() !== videoSubtitle) {
-                    dateP.textContent = videoSubtitle;
-                }
-            } else {
-                // Fallback to class selectors
-                const catP = card.querySelector('.framer-oivizu p, [style*="--framer-font-size: 20px"]');
-                if (catP && !catP.innerHTML.includes('THE KOTA')) {
-                    const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">THE KOTA</span></span>';
-                    catP.innerHTML = ytLogo;
-                }
+    function setupTestimonials() {
+        debugLog('setupTestimonials() starting...');
+        fetch("data/comments.json")
+            .then(res => res.json())
+            .then(comments => {
+                const testimonialCards = document.querySelectorAll('div[data-framer-name="Testimonial Person Card"]');
+                if (testimonialCards.length === 0) return;
+                
+                const listItems = Array.from(testimonialCards).map(card => card.closest('li')).filter(Boolean);
+                if (listItems.length === 0) return;
+                
+                const ul = listItems[0].parentElement;
+                if (!ul) return;
 
-                const titleP = card.querySelector('.framer-wkncrm p, [style*="--framer-font-size: 40px"]');
-                if (titleP && !titleP.textContent.includes(videoTitle)) {
-                    titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + videoTitle + '</span>';
-                }
+                const template = listItems[0].cloneNode(true);
+                
+                listItems.forEach(li => li.remove());
 
-                const dateP = card.querySelector('.framer-zh8net p');
-                if (dateP && dateP.textContent !== videoSubtitle) {
-                    dateP.textContent = videoSubtitle;
-                }
-            }
-        });
+                comments.forEach(comment => {
+                    const newLi = template.cloneNode(true);
+                    
+                    const reviewRichText = newLi.querySelector('div[data-framer-name="Testimonial Person Card"]').previousElementSibling;
+                    if (reviewRichText) {
+                        const reviewP = reviewRichText.querySelector('p');
+                        if (reviewP) {
+                            reviewP.innerHTML = '" ' + comment.text + ' "';
+                        }
+                    }
+
+                    const nameContainer = newLi.querySelector('div[data-framer-name="Name & Designation"]');
+                    if (nameContainer) {
+                        const nameP = nameContainer.firstElementChild.querySelector('p');
+                        if (nameP) {
+                            nameP.textContent = comment.author;
+                        }
+                        
+                        const designationP = nameContainer.lastElementChild.querySelector('p');
+                        if (designationP) {
+                            designationP.textContent = comment.likes + ' likes';
+                        }
+                    }
+                    
+                    ul.appendChild(newLi);
+                });
+            })
+            .catch(err => console.error("Failed to load comments.json", err));
     }
 
     function setupCustomScrollReveal() {
