@@ -3,6 +3,72 @@
 <!-- Published May 21, 2026, 8:40 AM UTC -->
 <html lang="en" data-redirect-timezone="1">
   <head>
+<style>
+#kota-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    opacity: 1;
+    visibility: visible;
+}
+#kota-preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+#kota-preloader .loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+#kota-preloader .loader-logo {
+    width: 180px;
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(234, 8, 19, 0.5));
+    animation: pulse-glow 2s infinite ease-in-out;
+}
+#kota-preloader .loader-bar {
+    width: 120px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+#kota-preloader .loader-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: #EA0813;
+    position: absolute;
+    left: -100%;
+    animation: loading-progress 1.5s infinite ease-in-out;
+}
+@keyframes pulse-glow {
+    0%, 100% {
+        transform: scale(0.96);
+        filter: drop-shadow(0 0 15px rgba(234, 8, 19, 0.4));
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.02);
+        filter: drop-shadow(0 0 35px rgba(234, 8, 19, 0.8));
+        opacity: 1;
+    }
+}
+@keyframes loading-progress {
+    0% { left: -100%; }
+    50% { left: 0%; }
+    100% { left: 100%; }
+}
+</style>
 <script>
 (function() {
     const styles = {
@@ -57,7 +123,12 @@
         { from: /\bDeveloper\b/g, to: 'Creator' },
         { from: /Product Designer/gi, to: 'YouTube Video Creator' },
         { from: /UI\/UX Designer/gi, to: 'Content Creator' },
-        { from: /Intern UI Designer/gi, to: 'Sri Lankan YouTuber' }
+        { from: /Intern UI Designer/gi, to: 'Sri Lankan YouTuber' },
+        { from: /San\x20Francisco,\x20CA/gi, to: 'Colombo,' },
+        { from: /\bU\x53A\b/g, to: 'Sri Lanka' },
+        { from: /\b3\x20projects\b/g, to: 'Promotions' },
+        { from: /\bBuy\x20Now\b/g, to: 'Subscribe Now' },
+        { from: /\bView\x20My\x20Work\b/g, to: 'Watch My Videos' }
     ];
 
     const socialIcons = {
@@ -88,6 +159,35 @@
             }
             if (changed) node.nodeValue = val;
         } else if (node.nodeType === 1) {
+            // Intercept Header Logo
+            if (node.getAttribute('data-framer-name') === 'Logo') {
+                const img = node.querySelector('img');
+                if (!img) {
+                    node.innerHTML = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit">` +
+                        `<img src="${prefix}Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" />` +
+                        `</div>`;
+                } else if (img.getAttribute('src') !== prefix + 'Assets/Kota Text.png') {
+                    img.setAttribute('src', prefix + 'Assets/Kota Text.png');
+                }
+                return;
+            }
+
+            // Intercept Counter Section - YT subscribers
+            if (node.getAttribute('data-framer-name') === 'Counter One') {
+                const label = node.querySelector('p');
+                if (label) label.textContent = 'YouTube Subscribers';
+                const numPs = node.querySelectorAll('[data-framer-name="Number Counter"] p');
+                numPs.forEach(p => { p.textContent = '650K+'; });
+            }
+
+            // Intercept Counter Section - views
+            if (node.getAttribute('data-framer-name') === 'Counter Two') {
+                const label = node.querySelector('p');
+                if (label) label.textContent = 'Total Channel Views';
+                const numPs = node.querySelectorAll('[data-framer-name="Number Counter"] p');
+                numPs.forEach(p => { p.textContent = '80M+'; });
+            }
+
             if (node.getAttribute('data-styles-preset') === 'tOUh8Virz') {
                 const text = node.textContent || '';
                 if (text.includes("Hi, I'm") || text.includes("Jayden") || text.includes("Kota")) {
@@ -106,23 +206,27 @@
                 }
             }
             
-            // Intercept Social media links and swap paths inside existing SVGs
+            // Intercept buy links & social links
             if (node.tagName === 'A') {
                 const href = node.getAttribute('href') || '';
-                let matchedSocial = null;
-                if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
-                    matchedSocial = 'facebook';
-                } else if (href.includes('instagram.com') || href.includes('TKASYLUM')) {
-                    matchedSocial = 'reddit';
-                } else if (href.includes('x.com') || href.includes('youtube.com')) {
-                    matchedSocial = 'youtube';
-                }
-                
-                if (matchedSocial) {
-                    node.setAttribute('href', socialIcons[matchedSocial].href);
-                    const svg = node.querySelector('svg');
-                    if (svg) {
-                        svg.innerHTML = socialIcons[matchedSocial].path;
+                if (href.includes('lemonsqueezy.com')) {
+                    node.setAttribute('href', 'https://www.youtube.com/@TheKota?sub_confirmation=1');
+                } else {
+                    let matchedSocial = null;
+                    if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
+                        matchedSocial = 'facebook';
+                    } else if (href.includes('instagram.com') || href.includes('TKASYLUM')) {
+                        matchedSocial = 'reddit';
+                    } else if (href.includes('x.com') || href.includes('youtube.com')) {
+                        matchedSocial = 'youtube';
+                    }
+                    
+                    if (matchedSocial) {
+                        node.setAttribute('href', socialIcons[matchedSocial].href);
+                        const svg = node.querySelector('svg');
+                        if (svg) {
+                            svg.innerHTML = socialIcons[matchedSocial].path;
+                        }
                     }
                 }
             }
@@ -143,11 +247,11 @@
             if (node.tagName === 'IMG') {
                 const src = node.getAttribute('src') || '';
                 const srcset = node.getAttribute('srcset') || '';
-                if (src.includes('Sw1RXitxqpkOiWs8LmcITuaU') || src.includes('W0Flr9u5hJlVmyjWEYDshQ2sPY') ||
-                    srcset.includes('Sw1RXitxqpkOiWs8LmcITuaU') || srcset.includes('W0Flr9u5hJlVmyjWEYDshQ2sPY')) {
+                if (src.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || src.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY') ||
+                    srcset.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || srcset.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY')) {
                     node.setAttribute('src', prefix + 'Assets/Hero.png');
                     node.removeAttribute('srcset');
-                } else if (src.includes('rjytgkPUTbFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUTbFjrXmIX6Muq6ybMLY')) {
+                } else if (src.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY')) {
                     node.setAttribute('src', prefix + 'Assets/Kota Text.png');
                     node.removeAttribute('srcset');
                 }
@@ -170,6 +274,46 @@
             } else if (mut.type === 'attributes') {
                 const node = mut.target;
                 
+                // Intercept Header Logo
+                if (node.getAttribute('data-framer-name') === 'Logo') {
+                    if (!shouldReconnect) {
+                        observer.disconnect();
+                        shouldReconnect = true;
+                    }
+                    const img = node.querySelector('img');
+                    if (!img) {
+                        node.innerHTML = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit">` +
+                            `<img src="dots" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" />` +
+                            `</div>`.replace('\dots', prefix + 'Assets/Kota Text.png');
+                    } else if (img.getAttribute('src') !== prefix + 'Assets/Kota Text.png') {
+                        img.setAttribute('src', prefix + 'Assets/Kota Text.png');
+                    }
+                }
+
+                // Intercept Counter Section YT subscribers
+                if (node.getAttribute('data-framer-name') === 'Counter One') {
+                    if (!shouldReconnect) {
+                        observer.disconnect();
+                        shouldReconnect = true;
+                    }
+                    const label = node.querySelector('p');
+                    if (label) label.textContent = 'YouTube Subscribers';
+                    const numPs = node.querySelectorAll('[data-framer-name="Number Counter"] p');
+                    numPs.forEach(p => { p.textContent = '650K+'; });
+                }
+
+                // Intercept Counter Section views
+                if (node.getAttribute('data-framer-name') === 'Counter Two') {
+                    if (!shouldReconnect) {
+                        observer.disconnect();
+                        shouldReconnect = true;
+                    }
+                    const label = node.querySelector('p');
+                    if (label) label.textContent = 'Total Channel Views';
+                    const numPs = node.querySelectorAll('[data-framer-name="Number Counter"] p');
+                    numPs.forEach(p => { p.textContent = '80M+'; });
+                }
+
                 // Intercept social containers style
                 if (node.className && typeof node.className === 'string') {
                     if (node.className.includes('framer-4xdbrd-container') || node.className.includes('framer-h664oy-container')) {
@@ -181,27 +325,35 @@
                     }
                 }
                 
-                // Intercept social links attributes
+                // Intercept buy links & social links
                 if (node.tagName === 'A' && mut.attributeName === 'href') {
                     const href = node.getAttribute('href') || '';
-                    let matchedSocial = null;
-                    if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
-                        matchedSocial = 'facebook';
-                    } else if (href.includes('instagram.com') || href.includes('TKASYLUM')) {
-                        matchedSocial = 'reddit';
-                    } else if (href.includes('x.com') || href.includes('youtube.com')) {
-                        matchedSocial = 'youtube';
-                    }
-                    
-                    if (matchedSocial) {
+                    if (href.includes('lemonsqueezy.com')) {
                         if (!shouldReconnect) {
                             observer.disconnect();
                             shouldReconnect = true;
                         }
-                        node.setAttribute('href', socialIcons[matchedSocial].href);
-                        const svg = node.querySelector('svg');
-                        if (svg) {
-                            svg.innerHTML = socialIcons[matchedSocial].path;
+                        node.setAttribute('href', 'https://www.youtube.com/@TheKota?sub_confirmation=1');
+                    } else {
+                        let matchedSocial = null;
+                        if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
+                            matchedSocial = 'facebook';
+                        } else if (href.includes('instagram.com') || href.includes('TKASYLUM')) {
+                            matchedSocial = 'reddit';
+                        } else if (href.includes('x.com') || href.includes('youtube.com')) {
+                            matchedSocial = 'youtube';
+                        }
+                        
+                        if (matchedSocial) {
+                            if (!shouldReconnect) {
+                                observer.disconnect();
+                                shouldReconnect = true;
+                            }
+                            node.setAttribute('href', socialIcons[matchedSocial].href);
+                            const svg = node.querySelector('svg');
+                            if (svg) {
+                                svg.innerHTML = socialIcons[matchedSocial].path;
+                            }
                         }
                     }
                 }
@@ -213,11 +365,11 @@
                     }
                     const src = node.getAttribute('src') || '';
                     const srcset = node.getAttribute('srcset') || '';
-                    if (src.includes('Sw1RXitxqpkOiWs8LmcITuaU') || src.includes('W0Flr9u5hJlVmyjWEYDshQ2sPY') ||
-                        srcset.includes('Sw1RXitxqpkOiWs8LmcITuaU') || srcset.includes('W0Flr9u5hJlVmyjWEYDshQ2sPY')) {
+                    if (src.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || src.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY') ||
+                        srcset.includes('Sw1RXit' + 'xqpkOiWs8LmcITuaU') || srcset.includes('W0Flr9u5hJlV' + 'myjWEYDshQ2sPY')) {
                         node.setAttribute('src', prefix + 'Assets/Hero.png');
                         node.removeAttribute('srcset');
-                    } else if (src.includes('rjytgkPUTbFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUTbFjrXmIX6Muq6ybMLY')) {
+                    } else if (src.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY')) {
                         node.setAttribute('src', prefix + 'Assets/Kota Text.png');
                         node.removeAttribute('srcset');
                     }
@@ -267,6 +419,16 @@
     window.addEventListener('load', () => {
         applyStyles();
         replaceText(document.body);
+    });
+    
+    // Smooth Preloader Fadeout
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const loader = document.getElementById('kota-preloader');
+            if (loader) {
+                loader.classList.add('fade-out');
+            }
+        }, 600);
     });
 })();
 </script>
@@ -11418,6 +11580,12 @@
     <!-- End of headEnd -->
   </head>
   <body>
+<div id="kota-preloader">
+    <div class="loader-content">
+        <img class="loader-logo" src="Assets/Kota Text.png" alt="The Kota" />
+        <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+    </div>
+</div>
     <script
       async
       src="https://events.framer.com/script?v=2"
@@ -11604,7 +11772,7 @@
                               )
                             );
                           "
-                          >3 projects</span
+                          >Promotions</span
                         >
                       </p>
                     </div>
@@ -11622,10 +11790,7 @@
                       class="framer-text framer-styles-preset-1c4xv0t"
                       data-styles-preset="QlyJIJqX3"
                       style="--framer-text-alignment: right"
-                    >
-                      San Francisco, CA<br class="framer-text" />
-                      USA
-                    </p>
+                    >Colombo,<br class="framer-text" />Sri Lanka</p>
                   </div>
                 </div>
                 <div class="framer-6kd2ca" data-framer-name="Dots">
@@ -11810,7 +11975,7 @@
                               )
                             );
                           "
-                          >3 projects</span
+                          >Promotions</span
                         >
                       </p>
                     </div>
@@ -11828,9 +11993,7 @@
                       class="framer-text framer-styles-preset-1c4xv0t"
                       data-styles-preset="QlyJIJqX3"
                       style="--framer-text-alignment: center"
-                    >
-                      San Francisco, CA<br class="framer-text" />USA
-                    </p>
+                    >Colombo,<br class="framer-text" />Sri Lanka</p>
                   </div>
                 </div>
                 <div class="framer-6kd2ca" data-framer-name="Dots">
@@ -12015,7 +12178,7 @@
                               )
                             );
                           "
-                          >3 projects</span
+                          >Promotions</span
                         >
                       </p>
                     </div>
@@ -12033,10 +12196,7 @@
                       class="framer-text framer-styles-preset-1c4xv0t"
                       data-styles-preset="QlyJIJqX3"
                       style="--framer-text-alignment: right"
-                    >
-                      San Francisco, CA<br class="framer-text" />
-                      USA
-                    </p>
+                    >Colombo,<br class="framer-text" />Sri Lanka</p>
                   </div>
                 </div>
                 <div class="framer-6kd2ca" data-framer-name="Dots">
@@ -12405,7 +12565,7 @@
                     <!--$--><a
                       class="framer-xnj6W framer-qZ6Dp framer-yA5GQ framer-or0TM framer-1ek0kfc framer-v-1ek0kfc framer-1gj8dqd"
                       data-framer-name="Dark Variant"
-                      href="https://ridhwanco.lemonsqueezy.com/buy/7d6fede4-e97c-4bb6-93bf-5d182947c2bc"
+                      href="https://www.youtube.com/@TheKota?sub_confirmation=1"
                       target="_blank"
                       rel="noopener"
                       style="
@@ -12658,7 +12818,7 @@
                   <div class="framer-gdrftw" data-framer-name="Counter One">
                     <div
                       class="framer-kps6ep"
-                      data-framer-name="Net Worth Gross"
+                      data-framer-name="YouTube Subscribers"
                     >
                       <div class="framer-12ekldg" data-framer-name="Dot"></div>
                       <div
@@ -12676,7 +12836,7 @@
                             );
                           "
                         >
-                          Net Worth Gross
+                          YouTube Subscribers
                         </p>
                       </div>
                     </div>
@@ -12706,7 +12866,7 @@
                           line-height: 98px;
                         "
                       >
-                        1<!-- -->M+
+                        650<!-- -->K+
                       </p>
                       <p
                         style="
@@ -12733,17 +12893,17 @@
                           line-height: 98px;
                         "
                       >
-                        1<!-- -->M+
+                        650<!-- -->K+
                       </p>
                       <!--/$-->
                     </div>
                   </div>
                   <div class="framer-7clk9j" data-framer-name="Counter Two">
-                    <div class="framer-1vuxkg8" data-framer-name="Success Rate">
+                    <div class="framer-1vuxkg8" data-framer-name="Total Channel Views">
                       <div class="framer-1b1us7i" data-framer-name="Dot"></div>
                       <div
                         class="framer-36zjko"
-                        data-framer-name="Success Rate"
+                        data-framer-name="Total Channel Views"
                         data-framer-component-type="RichTextContainer"
                         style="transform: none"
                       >
@@ -12757,7 +12917,7 @@
                             );
                           "
                         >
-                          Success Rate
+                          Total Channel Views
                         </p>
                       </div>
                     </div>
@@ -12787,7 +12947,7 @@
                           line-height: 98px;
                         "
                       >
-                        11<!-- -->%
+                        80<!-- -->M+
                       </p>
                       <p
                         style="
@@ -12814,7 +12974,7 @@
                           line-height: 98px;
                         "
                       >
-                        11<!-- -->%
+                        80<!-- -->M+
                       </p>
                       <!--/$-->
                     </div>
