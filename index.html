@@ -55,6 +55,38 @@
     100% { left: 100%; }
 }
 </style>
+<style>
+/* Scroll‑Reveal Section */
+#gsap-scroll-reveal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 1rem;
+  background: linear-gradient(135deg, hsl(215,20%,8%) 0%, hsl(215,15%,12%) 100%);
+  overflow: hidden;
+}
+#gsap-scroll-reveal .scroll-reveal-content {
+  max-width: 860px;
+  text-align: center;
+}
+#gsap-scroll-reveal .scroll-reveal-text {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem,4vw,2.75rem);
+  line-height: 1.35;
+  color: #eaeaea;
+  letter-spacing: -0.02em;
+}
+#gsap-scroll-reveal .scroll-reveal-text .word {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0.8);
+  color: rgba(234,8,19,0.2);
+}
+#gsap-scroll-reveal .scroll-reveal-content:hover .scroll-reveal-text .word {
+  color: #ea0813;
+}
+</style>
 <script>
 (function() {
     const preloaderStart = Date.now();
@@ -105,77 +137,130 @@
             }
         }
 
-        // Apply scroll-reveal typography replacement
-        const c1 = document.querySelector('.framer-1x4bpdp-container');
-        const c2 = document.querySelector('.framer-p0ih05-container');
-        if (c1) {
-            applyTextToRevealSpans(c1, "");
-        }
-        if (c2) {
-            applyTextToRevealSpans(c2, "Yooow whats up people...");
-        }
+        // Apply custom scroll-reveal typography
+        setupCustomScrollReveal();
     }
 
-    function applyTextToRevealSpans(container, newText) {
-        const p = container.querySelector('p');
-        if (!p) return;
-        
-        const wordSpans = Array.from(p.childNodes).filter(node => node.nodeType === 1 && node.tagName === 'SPAN');
-        if (wordSpans.length === 0) return;
-        
-        const words = wordSpans.map(ws => {
-            const charSpans = Array.from(ws.childNodes).filter(node => node.nodeType === 1 && node.tagName === 'SPAN');
-            const spaceNode = Array.from(ws.childNodes).find(node => node.nodeType === 3 && (node.nodeValue.includes('\u00a0') || node.nodeValue.includes(' ')));
-            return {
-                ws,
-                charSpans,
-                spaceNode
-            };
-        });
-        
-        const targetWords = newText ? newText.split(' ') : [];
-        
-        for (let i = 0; i < words.length; i++) {
-            const wordInfo = words[i];
-            if (i < targetWords.length) {
-                const targetWord = targetWords[i];
-                let charsPlaced = 0;
-                
-                for (let j = 0; j < wordInfo.charSpans.length; j++) {
-                    const span = wordInfo.charSpans[j];
-                    const char = targetWord[j];
-                    if (char !== undefined) {
-                        if (span.textContent !== char) {
-                            span.textContent = char;
-                        }
-                        span.style.setProperty('display', 'inline-block');
-                        charsPlaced++;
-                    } else {
-                        if (span.textContent !== "") {
-                            span.textContent = "";
-                        }
-                    }
-                }
-                
-                // Show space if it's not the last target word
-                const spaceVal = (i < targetWords.length - 1) ? '\u00a0' : '';
-                if (wordInfo.spaceNode && wordInfo.spaceNode.nodeValue !== spaceVal) {
-                    wordInfo.spaceNode.nodeValue = spaceVal;
-                }
-                wordInfo.ws.style.setProperty('display', 'inline-block');
-            } else {
-                // Word is unused, hide it and all its children
-                for (let j = 0; j < wordInfo.charSpans.length; j++) {
-                    const span = wordInfo.charSpans[j];
-                    if (span.textContent !== "") {
-                        span.textContent = "";
-                    }
-                }
-                if (wordInfo.spaceNode && wordInfo.spaceNode.nodeValue !== '') {
-                    wordInfo.spaceNode.nodeValue = '';
-                }
-                wordInfo.ws.style.setProperty('display', 'none');
+    function setupCustomScrollReveal() {
+        const checkGsapInterval = setInterval(() => {
+            if (window.gsap && window.ScrollTrigger) {
+                clearInterval(checkGsapInterval);
+                initGsapAnimation();
             }
+        }, 100);
+
+        function initGsapAnimation() {
+            gsap.registerPlugin(ScrollTrigger);
+            
+            const desktopContainer = document.querySelector('.framer-1x4bpdp-container');
+            const mobileContainer = document.querySelector('.framer-p0ih05-container');
+            
+            if (mobileContainer) {
+                // Hide mobile container to prevent duplication
+                mobileContainer.style.setProperty('display', 'none', 'important');
+            }
+
+            if (!desktopContainer) return;
+            
+            const container = desktopContainer;
+            if (container.getAttribute('data-rebuilt') === 'true') return;
+            container.setAttribute('data-rebuilt', 'true');
+            
+            // Force container styles for a compact but massive typography section
+            container.style.setProperty('overflow', 'visible', 'important');
+            container.style.setProperty('width', '100%', 'important');
+            container.style.setProperty('height', 'auto', 'important');
+            container.style.setProperty('padding', '5vh 0', 'important');
+            container.style.setProperty('display', 'flex', 'important');
+            container.style.setProperty('align-items', 'center', 'important');
+            container.style.setProperty('justify-content', 'center', 'important');
+            
+            // Clear existing content
+            container.innerHTML = '';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'kota-reveal-wrapper';
+            wrapper.style.cssText = 'width: 100%; max-width: 1100px; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.2em 0.4em; text-transform: uppercase; font-family: "Rajdhani", sans-serif; padding: 0 5vw; text-align: center;';
+
+            // Define the typography poster blocks to flow inline
+            const textBlocks = [
+                { text: "Yooow,", color: "transparent", stroke: "2px #EA0813", size: "clamp(50px, 12vw, 150px)", weight: "900", italic: true },
+                { text: "what's up people", color: "#ffffff", stroke: "none", size: "clamp(30px, 6vw, 70px)", weight: "700", italic: false },
+                { text: "this is your", color: "#888888", stroke: "none", size: "clamp(24px, 4vw, 50px)", weight: "500", italic: true },
+                { text: "boy kota", color: "#EA0813", stroke: "none", size: "clamp(60px, 14vw, 180px)", weight: "900", italic: false },
+                { text: "and how are you", color: "#ffffff", stroke: "none", size: "clamp(20px, 4vw, 45px)", weight: "600", italic: false, letterSpacing: "2px" },
+                { text: "guys doing!", color: "#ffffff", stroke: "none", size: "clamp(30px, 7vw, 80px)", weight: "900", italic: true }
+            ];
+
+            textBlocks.forEach((block, idx) => {
+                // Split block into individual words to allow flowing wrap and individual animation
+                const words = block.text.split(' ');
+                words.forEach(word => {
+                    const span = document.createElement('span');
+                    span.className = 'kota-gsap-word';
+                    span.textContent = word;
+                    span.style.display = 'inline-block';
+                    span.style.fontSize = block.size;
+                    span.style.fontWeight = block.weight;
+                    span.style.color = block.color;
+                    span.style.lineHeight = '0.9';
+                    span.style.fontStyle = block.italic ? 'italic' : 'normal';
+                    
+                    if (block.stroke !== 'none') {
+                        span.style.webkitTextStroke = block.stroke;
+                    }
+                    if (block.letterSpacing) {
+                        span.style.letterSpacing = block.letterSpacing;
+                    }
+                    
+                    // Initial animation state
+                    span.style.opacity = '0';
+                    span.style.transformOrigin = '50% 100%';
+
+                    wrapper.appendChild(span);
+                });
+            });
+            
+            container.appendChild(wrapper);
+
+            // Apply modern creative GSAP animation
+            const elements = wrapper.querySelectorAll('.kota-gsap-word');
+            
+            // Create a timeline scrubbed to scroll
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: container,
+                    start: "top 95%",
+                    end: "center 40%",
+                    scrub: 1.5
+                }
+            });
+            
+            tl.fromTo(elements, 
+                {
+                    opacity: 0,
+                    y: 100,
+                    z: -100,
+                    rotateX: 60,
+                    rotateY: (index) => (index % 2 === 0 ? 20 : -20),
+                    skewX: (index) => (index % 2 === 0 ? 10 : -10),
+                    scale: 0.3,
+                    filter: "blur(15px)"
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    z: 0,
+                    rotateX: 0,
+                    rotateY: 0,
+                    skewX: 0,
+                    scale: 1,
+                    filter: "blur(0px)",
+                    duration: 2,
+                    stagger: 0.5, // Significant stagger so they load one-by-one
+                    ease: "elastic.out(1.2, 0.5)"
+                }
+            );
         }
     }
 
@@ -195,11 +280,11 @@
         { from: /Product Designer/gi, to: 'YouTube Video Creator' },
         { from: /UI\/UX Designer/gi, to: 'Content Creator' },
         { from: /Intern UI Designer/gi, to: 'Sri Lankan YouTuber' },
-        { from: /San\x20Francisco,\x20CA/gi, to: 'Colombo, Sri Lanka' },
-        { from: /\bUSA\b/g, to: '' },
+        { from: /San\x20Francisco,\x20CA/gi, to: 'Colombo,' },
+        { from: /\bUSA\b/g, to: 'Sri Lanka' },
         { from: /\b3\x20projects\b/g, to: 'Promotions' },
         { from: /\bBuy\x20Now\b/g, to: 'Subscribe Now' },
-        { from: /\bView\x20My\x20Work\b/g, to: 'Watch My Videos' }
+        { from: /\bView\x20My\x20Work\b/g, to: 'Kota Extra' }
     ];
 
     const socialIcons = {
@@ -429,8 +514,13 @@
             
             if (node.tagName === 'A') {
                 const href = node.getAttribute('href') || '';
-                if (href.includes('lemonsqueezy.com')) {
-                    node.setAttribute('href', 'https://www.youtube.com/@TheKota?sub_confirmation=1');
+                const name = node.getAttribute('data-framer-name') || '';
+                if (href.includes('lemonsqueezy.com') || href.includes('youtube.com/@TheKota?sub_confirmation=1')) {
+                    node.setAttribute('href', 'https://www.youtube.com/@TheKota');
+                } else if (name === 'Work') {
+                    node.setAttribute('href', 'https://www.youtube.com/@kotaextra');
+                    node.setAttribute('target', '_blank');
+                    node.setAttribute('rel', 'noopener');
                 } else {
                     let matchedSocial = null;
                     if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
@@ -534,8 +624,13 @@
                 
                 if (node.tagName === 'A' && mut.attributeName === 'href') {
                     const href = node.getAttribute('href') || '';
-                    if (href.includes('lemonsqueezy.com')) {
-                        node.setAttribute('href', 'https://www.youtube.com/@TheKota?sub_confirmation=1');
+                    const name = node.getAttribute('data-framer-name') || '';
+                    if (href.includes('lemonsqueezy.com') || href.includes('youtube.com/@TheKota?sub_confirmation=1')) {
+                        node.setAttribute('href', 'https://www.youtube.com/@TheKota');
+                    } else if (name === 'Work') {
+                        node.setAttribute('href', 'https://www.youtube.com/@kotaextra');
+                        node.setAttribute('target', '_blank');
+                        node.setAttribute('rel', 'noopener');
                     } else {
                         let matchedSocial = null;
                         if (href.includes('dribbble.com') || href.includes('TheKotaReturns') || href.includes('pinterest.com')) {
@@ -12772,7 +12867,7 @@
                     <!--$--><a
                       class="framer-xnj6W framer-qZ6Dp framer-yA5GQ framer-or0TM framer-1ek0kfc framer-v-1ek0kfc framer-1gj8dqd"
                       data-framer-name="Dark Variant"
-                      href="https://www.youtube.com/@TheKota?sub_confirmation=1"
+                      href="https://www.youtube.com/@TheKota"
                       target="_blank"
                       rel="noopener"
                       style="
@@ -12928,8 +13023,7 @@
                   <div class="framer-12xp2q4-container">
                     <!--$--><a
                       class="framer-xnj6W framer-qZ6Dp framer-yA5GQ framer-or0TM framer-1ek0kfc framer-v-klxtoh framer-1gj8dqd"
-                      data-framer-name="Work"
-                      href="work.html"
+                      data-framer-name="Work" href="https://www.youtube.com/@kotaextra" target="_blank" rel="noopener"
                       style="
                         border-bottom-left-radius: 99px;
                         border-bottom-right-radius: 99px;
@@ -32116,5 +32210,7 @@
     <!-- Start of bodyEnd -->
 
     <!-- End of bodyEnd -->
-  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</body>
 </html>
