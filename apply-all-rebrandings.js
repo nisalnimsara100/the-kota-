@@ -109,19 +109,97 @@ htmlFiles.forEach(filePath => {
                 [data-framer-name="Global"] {
                     display: none !important;
                 }
-                /* Make Counter tiles more creative */
+                /* Make Counter tiles smaller, more compact & highly creative */
                 [data-framer-name="Counter One"],
                 [data-framer-name="Counter Two"] {
-                    background: linear-gradient(180deg, rgba(234,8,19,0.06), rgba(0,0,0,0.35)) !important;
-                    border-radius: 18px !important;
-                    box-shadow: inset 0 1px 20px rgba(255,255,255,0.02), 0 10px 30px rgba(0,0,0,0.6) !important;
-                    padding: 24px !important;
-                    border: 1px solid rgba(255,255,255,0.03) !important;
-                    backdrop-filter: blur(6px) !important;
+                    background: linear-gradient(135deg, rgba(20, 20, 20, 0.75) 0%, rgba(10, 10, 10, 0.95) 100%) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+                    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 0 20px rgba(234, 8, 19, 0.02) !important;
+                    padding: 18px 24px !important;
+                    gap: 16px !important; /* Compact gap */
+                    backdrop-filter: blur(16px) !important;
+                    transform: translateY(0) scale(1) !important;
+                    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+                    flex-direction: column !important;
+                    align-items: flex-start !important; /* Left-align content */
+                    justify-content: space-between !important;
+                    height: auto !important;
+                    overflow: visible !important;
+                }
+                [data-framer-name="Counter One"]:hover,
+                [data-framer-name="Counter Two"]:hover {
+                    transform: translateY(-5px) scale(1.02) !important;
+                    border-color: rgba(234, 8, 19, 0.4) !important;
+                    border-top-color: rgba(234, 8, 19, 0.8) !important;
+                    box-shadow: 0 20px 40px rgba(234, 8, 19, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 0 30px rgba(234, 8, 19, 0.2) !important;
                 }
                 [data-framer-name="Counter One"] .framer-text,
                 [data-framer-name="Counter Two"] .framer-text {
                     color: #fff !important;
+                }
+
+                /* Compact & Sleek label text and dot alignment */
+                [data-framer-name="Counter One"] [data-framer-name="Dot"],
+                [data-framer-name="Counter Two"] [data-framer-name="Dot"],
+                .framer-lQfOg .framer-12ekldg,
+                .framer-lQfOg .framer-1b1us7i {
+                    background-color: #EA0813 !important;
+                    border-radius: 50% !important;
+                    box-shadow: 0 0 8px #EA0813, 0 0 16px rgba(234, 8, 19, 0.7) !important;
+                    width: 6px !important;
+                    height: 6px !important;
+                    flex-shrink: 0 !important;
+                }
+
+                [data-framer-name="Counter One"] [data-framer-component-type="RichTextContainer"] p,
+                [data-framer-name="Counter Two"] [data-framer-component-type="RichTextContainer"] p {
+                    font-family: "Rajdhani", sans-serif !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    letter-spacing: 0.08em !important;
+                    text-transform: uppercase !important;
+                    color: rgba(255, 255, 255, 0.75) !important;
+                    margin: 0 !important;
+                    text-align: left !important;
+                }
+
+                /* Creative, punchy & compact Counter Numbers */
+                [data-framer-name="Counter One"] [data-framer-name="Number Counter"] p,
+                [data-framer-name="Counter Two"] [data-framer-name="Number Counter"] p {
+                    font-family: "Rajdhani", sans-serif !important;
+                    font-weight: 800 !important;
+                    font-size: clamp(34px, 4vw, 44px) !important; /* Smaller size */
+                    line-height: 1.1 !important;
+                    letter-spacing: -0.01em !important;
+                    color: #ffffff !important;
+                    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1), 0 4px 10px rgba(0, 0, 0, 0.5) !important;
+                    text-align: left !important;
+                    margin: 0 !important;
+                    width: 100% !important;
+                }
+
+                [data-framer-name="Counter One"] [data-framer-name="Number Counter"],
+                [data-framer-name="Counter Two"] [data-framer-name="Number Counter"] {
+                    height: auto !important;
+                    width: 100% !important;
+                    display: flex !important;
+                    align-items: flex-start !important;
+                    justify-content: flex-start !important;
+                    text-align: left !important;
+                    position: relative !important;
+                }
+
+                /* Reduce overall Counter Section Height */
+                .framer-lQfOg .framer-jmot7u {
+                    padding: 24px 48px !important; /* Shrunk padding */
+                    gap: 16px !important;
+                }
+                @media (max-width: 810px) {
+                    .framer-lQfOg .framer-jmot7u {
+                        padding: 16px 15px !important;
+                    }
                 }
             \`;
             document.head.appendChild(styleEl);
@@ -133,7 +211,7 @@ htmlFiles.forEach(filePath => {
             document.querySelectorAll('[data-framer-component-type="RichTextContainer"]').forEach(el => {
                 if (el.innerText && /YouTube Subscribers/i.test(el.innerText)) {
                     el.style.removeProperty('display');
-                    el.innerText = el.innerText.replace(/YouTube Subscribers/gi, 'Subscribers');
+                    el.innerHTML = el.innerHTML.replace(/YouTube Subscribers/gi, 'Subscribers');
                 }
             });
         } catch (e) {

@@ -130,21 +130,97 @@
                 [data-framer-name="Global"] {
                     display: none !important;
                 }
-                /* Make Counter tiles smaller and more creative */
+                /* Make Counter tiles smaller, more compact & highly creative */
                 [data-framer-name="Counter One"],
                 [data-framer-name="Counter Two"] {
-                    background: linear-gradient(180deg, rgba(234,8,19,0.04), rgba(0,0,0,0.28)) !important;
-                    border-radius: 12px !important;
-                    box-shadow: 0 6px 18px rgba(0,0,0,0.5) !important;
-                    padding: 12px 14px !important;
-                    border: 1px solid rgba(255,255,255,0.03) !important;
-                    backdrop-filter: blur(4px) !important;
-                    max-width: 240px !important;
+                    background: linear-gradient(135deg, rgba(20, 20, 20, 0.75) 0%, rgba(10, 10, 10, 0.95) 100%) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+                    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 0 20px rgba(234, 8, 19, 0.02) !important;
+                    padding: 18px 24px !important;
+                    gap: 16px !important; /* Compact gap */
+                    backdrop-filter: blur(16px) !important;
+                    transform: translateY(0) scale(1) !important;
+                    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+                    flex-direction: column !important;
+                    align-items: flex-start !important; /* Left-align content */
+                    justify-content: space-between !important;
+                    height: auto !important;
+                    overflow: visible !important;
+                }
+                [data-framer-name="Counter One"]:hover,
+                [data-framer-name="Counter Two"]:hover {
+                    transform: translateY(-5px) scale(1.02) !important;
+                    border-color: rgba(234, 8, 19, 0.4) !important;
+                    border-top-color: rgba(234, 8, 19, 0.8) !important;
+                    box-shadow: 0 20px 40px rgba(234, 8, 19, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 0 30px rgba(234, 8, 19, 0.2) !important;
                 }
                 [data-framer-name="Counter One"] .framer-text,
                 [data-framer-name="Counter Two"] .framer-text {
                     color: #fff !important;
-                    font-weight: 700 !important;
+                }
+
+                /* Compact & Sleek label text and dot alignment */
+                [data-framer-name="Counter One"] [data-framer-name="Dot"],
+                [data-framer-name="Counter Two"] [data-framer-name="Dot"],
+                .framer-lQfOg .framer-12ekldg,
+                .framer-lQfOg .framer-1b1us7i {
+                    background-color: #EA0813 !important;
+                    border-radius: 50% !important;
+                    box-shadow: 0 0 8px #EA0813, 0 0 16px rgba(234, 8, 19, 0.7) !important;
+                    width: 6px !important;
+                    height: 6px !important;
+                    flex-shrink: 0 !important;
+                }
+
+                [data-framer-name="Counter One"] [data-framer-component-type="RichTextContainer"] p,
+                [data-framer-name="Counter Two"] [data-framer-component-type="RichTextContainer"] p {
+                    font-family: "Rajdhani", sans-serif !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    letter-spacing: 0.08em !important;
+                    text-transform: uppercase !important;
+                    color: rgba(255, 255, 255, 0.75) !important;
+                    margin: 0 !important;
+                    text-align: left !important;
+                }
+
+                /* Creative, punchy & compact Counter Numbers */
+                [data-framer-name="Counter One"] [data-framer-name="Number Counter"] p,
+                [data-framer-name="Counter Two"] [data-framer-name="Number Counter"] p {
+                    font-family: "Rajdhani", sans-serif !important;
+                    font-weight: 800 !important;
+                    font-size: clamp(34px, 4vw, 44px) !important; /* Smaller size */
+                    line-height: 1.1 !important;
+                    letter-spacing: -0.01em !important;
+                    color: #ffffff !important;
+                    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1), 0 4px 10px rgba(0, 0, 0, 0.5) !important;
+                    text-align: left !important;
+                    margin: 0 !important;
+                    width: 100% !important;
+                }
+
+                [data-framer-name="Counter One"] [data-framer-name="Number Counter"],
+                [data-framer-name="Counter Two"] [data-framer-name="Number Counter"] {
+                    height: auto !important;
+                    width: 100% !important;
+                    display: flex !important;
+                    align-items: flex-start !important;
+                    justify-content: flex-start !important;
+                    text-align: left !important;
+                    position: relative !important;
+                }
+
+                /* Reduce overall Counter Section Height */
+                .framer-lQfOg .framer-jmot7u {
+                    padding: 24px 48px !important; /* Shrunk padding */
+                    gap: 16px !important;
+                }
+                @media (max-width: 810px) {
+                    .framer-lQfOg .framer-jmot7u {
+                        padding: 16px 15px !important;
+                    }
                 }
             `;
             document.head.appendChild(styleEl);
@@ -156,7 +232,7 @@
             document.querySelectorAll('[data-framer-component-type="RichTextContainer"]').forEach(el => {
                 if (el.innerText && /YouTube Subscribers/i.test(el.innerText)) {
                     el.style.removeProperty('display');
-                    el.innerText = el.innerText.replace(/YouTube Subscribers/gi, 'Subscribers');
+                    el.innerHTML = el.innerHTML.replace(/YouTube Subscribers/gi, 'Subscribers');
                 }
             });
         } catch (e) {
@@ -607,37 +683,24 @@
         }
     }
 
-    // Preloader state tracking — robust hide and removal
+    // Preloader state tracking
     let preloaderHidden = false;
     let fadeOutScheduled = false;
-    let fadeTimeoutId = null;
     function triggerFadeOut() {
         if (fadeOutScheduled || preloaderHidden) return;
         fadeOutScheduled = true;
         const elapsed = Date.now() - preloaderStart;
         const delay = Math.max(0, 4000 - elapsed);
-        fadeTimeoutId = setTimeout(() => {
+        setTimeout(() => {
             const loader = document.getElementById('kota-preloader');
             if (loader) {
-                // add class to animate fade
                 loader.classList.add('fade-out');
-                // remove from DOM after transition completes
-                const onEnd = (e) => {
-                    try { loader.remove(); } catch (err) {}
-                    preloaderHidden = true;
-                };
-                loader.addEventListener('transitionend', onEnd, { once: true });
-                // safety removal if transitionend doesn't fire
-                setTimeout(() => { if (!preloaderHidden) { try { loader.remove(); } catch(e){} preloaderHidden = true; } }, 1200);
-            } else {
                 preloaderHidden = true;
             }
         }, delay);
     }
     // Absolute fail-safe fallback (6 seconds from script execution)
-    const absoluteFail = setTimeout(() => {
-        triggerFadeOut();
-    }, 6000);
+    setTimeout(triggerFadeOut, 6000);
 
     const observer = new MutationObserver((mutations) => {
         observer.disconnect();
@@ -750,7 +813,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         applyStyles();
         replaceText(document.body);
-        // Fade out shortly after DOM parsed to cover hydration changes
+        // Fade out 1.2s after DOM is parsed to cover hydration changes
         setTimeout(triggerFadeOut, 1200);
     });
     window.addEventListener('load', () => {
@@ -759,54 +822,8 @@
         // Trigger immediately once fully loaded
         triggerFadeOut();
     });
-
-    // Initialize Lenis for buttery smooth scrolling
-    (function initLenis() {
-        try {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.2.0/bundled/lenis.min.js';
-            script.async = true;
-            script.onload = () => {
-                try {
-                    window._lenis = new Lenis({
-                            duration: 1.4,
-                            easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
-                            lerp: 0.08,
-                            smooth: true,
-                            smoothWheel: true,
-                            wheelMultiplier: 1.2,
-                            direction: 'vertical'
-                        });
-                        function raf(time) {
-                            window._lenis.raf(time);
-                            requestAnimationFrame(raf);
-                        }
-                        requestAnimationFrame(raf);
-
-                        try {
-                            if (window.gsap && window.ScrollTrigger) {
-                                const ST = window.ScrollTrigger;
-                                ST.scrollerProxy(document.documentElement, {
-                                    scrollTop(value) {
-                                        if (arguments.length) window._lenis.scrollTo(value);
-                                        return window.scrollY;
-                                    },
-                                    getBoundingClientRect() {
-                                        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-                                    },
-                                    pinType: document.documentElement.style.transform ? 'transform' : 'fixed'
-                                });
-                                window._lenis.on('scroll', () => ST.update());
-                                ST.addEventListener('refresh', () => window._lenis.update && window._lenis.update());
-                                setTimeout(() => ST.refresh(), 0);
-                            }
-                        } catch (e) { console.warn('Lenis<->ScrollTrigger integration failed', e); }
-            };
-            document.head.appendChild(script);
-        } catch (e) {}
-    })();
-
-    // Global Smooth Scroll Interceptor using Lenis when available
+    
+    // Global Smooth Scroll Interceptor
     document.addEventListener('click', (e) => {
         const a = e.target.closest('a');
         if (a) {
@@ -818,7 +835,7 @@
                 const isCurrentPage = page === '' || page === 'index.html' || window.location.pathname.endsWith('/' + page) || (page === 'index.html' && window.location.pathname === '/');
                 if (isCurrentPage) {
                     const target = document.getElementById(hash);
-                            if (target) {
+                    if (target) {
                         e.preventDefault();
                         if (window._lenis && typeof window._lenis.scrollTo === 'function') {
                             window._lenis.scrollTo(target, { offset: 0 });
