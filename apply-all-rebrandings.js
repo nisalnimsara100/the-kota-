@@ -424,9 +424,21 @@ htmlFiles.forEach(filePath => {
         setupBrandsSection();
         setupPricingSection();
         setupSidebarScrollSpy();
+        setupFooter();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
+    }
+
+    function setupFooter() {
+        const strongTexts = document.querySelectorAll('.framer-text');
+        strongTexts.forEach(strong => {
+            if (strong.textContent === 'Ridhwan Co.' || strong.innerHTML === 'Ridhwan Co.') {
+                strong.innerHTML = '<a href="https://hexcode.lk/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none; cursor: pointer;">HexCode</a>';
+                // Stop pointer events propagation to prevent Framer links from intercepting
+                strong.style.setProperty('pointer-events', 'auto', 'important');
+            }
+        });
     }
 
     function setupSidebarScrollSpy() {
