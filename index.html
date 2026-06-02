@@ -4,7 +4,7 @@
 <html lang="en" data-redirect-timezone="1">
 
 <head>
-<script>
+  <script>
 (function() {
     const preloaderStart = Date.now();
     function debugLog(msg) {} // Empty debug log helper for visual cleanup
@@ -768,8 +768,8 @@
 
     function setupAwards() {
         debugLog('setupAwards() starting...');
-        const awardsSection = document.querySelector('[data-framer-name="Awards Section"]');
-        if (!awardsSection) return;
+        const awardsSections = document.querySelectorAll('[data-framer-name="Awards Section"]');
+        if (awardsSections.length === 0) return;
 
         if (!document.getElementById('kota-awards-css')) {
             const style = document.createElement('style');
@@ -816,29 +816,30 @@
             document.head.appendChild(style);
         }
 
-        const awards = awardsSection.querySelectorAll('a[data-framer-name="Variant 1"], a[data-framer-name="Variant 2"]');
-        if (awards.length > 0) {
-            const firstAwardWrap = awards[0].querySelector('[data-framer-name="Wrap"]');
-            if (firstAwardWrap) {
-                firstAwardWrap.innerHTML = `
-                   <div class="award-item">
-                     <img src="assets/silver-playbutton.png" alt="YouTube Silver Play Button" class="award-icon">
-                     <div class="award-title">YouTube Silver Play Button</div>
-                     <div class="award-desc">Awarded for surpassing 100K subscribers</div>
-                     <div class="award-meta">THE KOTA — 653K+ Subscribers</div>
-                   </div>
-                `;
-                awards[0].removeAttribute('href');
-                awards[0].style.cursor = 'default';
-            }
-            
-            // Also ensure any other awards that might have subscriber counts are updated to 653K+
+        awardsSections.forEach(section => {
+            const awards = section.querySelectorAll('a[data-framer-name="Variant 1"], a[data-framer-name="Variant 2"]');
             awards.forEach(award => {
-                if (award.innerHTML.includes('Subscribers')) {
+                const text = award.textContent || '';
+                if (text.includes('SOTD E-commerce') || award.innerHTML.includes('YouTube Silver Play Button')) {
+                    const wrap = award.querySelector('[data-framer-name="Wrap"]');
+                    if (wrap) {
+                        wrap.innerHTML = `
+                           <div class="award-item">
+                             <img src="assets/silverb.avif" alt="YouTube Silver Play Button" class="award-icon">
+                             <div class="award-title">YouTube Silver Play Button</div>
+                             <div class="award-desc">Awarded for surpassing 100K subscribers</div>
+                             <div class="award-meta">THE KOTA — 653K+ Subscribers</div>
+                           </div>
+                        `;
+                        award.removeAttribute('href');
+                        award.style.setProperty('cursor', 'default', 'important');
+                        award.style.setProperty('border-radius', '32px', 'important');
+                    }
+                } else if (award.innerHTML.includes('Subscribers')) {
                     award.innerHTML = award.innerHTML.replace(/[0-9]+[KMBkmb]?\+?\s+Subscribers/gi, '653K+ Subscribers');
                 }
             });
-        }
+        });
     }
 
     function setupCustomScrollReveal() {
@@ -1513,7 +1514,7 @@
       color: #ea0813;
     }
   </style>
-  
+
 
 
   <meta charset="utf-8" />
