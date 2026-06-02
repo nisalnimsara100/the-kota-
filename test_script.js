@@ -1,34 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-
-const baseDir = __dirname;
-
-
-const htmlFiles = [
-    path.join(baseDir, 'index.html'),
-    path.join(baseDir, 'work', 'x---direct-mobile.html'),
-    path.join(baseDir, 'work', 'helve-website-redesign.html'),
-    path.join(baseDir, 'work', 'ui-ux-agency.html')
-].filter(file => fs.existsSync(file));
-
-const youtubePath = `<path fill="currentColor" d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>`;
-const facebookPath = `<path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>`;
-const redditPath = `<path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.37-4.33 3.79.85c.08.85.79 1.51 1.65 1.51 1.1 0 1.99-.89 1.99-1.99s-.89-2-1.99-2c-.88 0-1.61.58-1.86 1.38l-4.22-.95c-.2-.04-.4.07-.47.27L10.3 8.01C7.81 8.07 5.56 8.71 3.9 9.72 3.33 8.94 2.42 8.46 1.45 8.46c-1.65 0-3 1.35-3 3 0 1.13.63 2.11 1.56 2.62-.06.3-.1.61-.1.92 0 4.14 4.7 7.5 10.5 7.5s10.5-3.36 10.5-7.5c0-.31-.04-.62-.1-.92.93-.51 1.56-1.49 1.56-2.62zM5.5 13.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>`;
-
-htmlFiles.forEach(filePath => {
-    const relativePath = path.relative(baseDir, filePath);
-
-    // Determine depth and prefix
-    const depth = relativePath.split(path.sep).length - 1;
-    const prefix = depth > 0 ? '../'.repeat(depth) : '';
-
-    const inlineScript = `
-<script>
 (function() {
     const preloaderStart = Date.now();
     function debugLog(msg) {} // Empty debug log helper for visual cleanup
 
-    const prefix = '${prefix}';
+    const prefix = '';
     
     const sectionMap = {
         'Home': 'home',
@@ -130,34 +104,34 @@ htmlFiles.forEach(filePath => {
     const repls = [
         { from: /John Jayden/gi, to: 'The Kota' },
         { from: /Jayden Jones/gi, to: 'The Kota' },
-        { from: /@Jayden\\.design/gi, to: '@thekota' },
-        { from: /\\bJayden\\b/g, to: 'The Kota' },
-        { from: /\\bjayden\\b/g, to: 'the kota' },
+        { from: /@Jayden\.design/gi, to: '@thekota' },
+        { from: /\bJayden\b/g, to: 'The Kota' },
+        { from: /\bjayden\b/g, to: 'the kota' },
         { from: /web developer/gi, to: 'Sri Lankan YouTube Creator' },
         { from: /Web-designer/g, to: 'YouTube' },
-        { from: /\\bDeveloper\\b/g, to: 'Creator' },
+        { from: /\bDeveloper\b/g, to: 'Creator' },
         { from: /Product Designer/gi, to: 'YouTube Video Creator' },
-        { from: /UI\\/UX Designer/gi, to: 'Content Creator' },
+        { from: /UI\/UX Designer/gi, to: 'Content Creator' },
         { from: /Intern UI Designer/gi, to: 'Sri Lankan YouTuber' },
-        { from: /San\\x20Francisco,\\x20CA/gi, to: 'Colombo,' },
-        { from: /\\bUSA\\b/g, to: 'Sri Lanka' },
-        { from: /\\b3\\x20projects\\b/g, to: 'Promotions' },
-        { from: /\\bBuy\\x20Now\\b/g, to: 'Subscribe Now' },
-        { from: /\\bView\\x20My\\x20Work\\b/g, to: 'Kota Extra' }
+        { from: /San\x20Francisco,\x20CA/gi, to: 'Colombo,' },
+        { from: /\bUSA\b/g, to: 'Sri Lanka' },
+        { from: /\b3\x20projects\b/g, to: 'Promotions' },
+        { from: /\bBuy\x20Now\b/g, to: 'Subscribe Now' },
+        { from: /\bView\x20My\x20Work\b/g, to: 'Kota Extra' }
     ];
 
     const socialIcons = {
         youtube: {
             href: 'https://www.youtube.com/@TheKota',
-            path: '${youtubePath}'
+            path: '<path fill="currentColor" d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>'
         },
         facebook: {
             href: 'https://www.facebook.com/TheKotaReturns',
-            path: '${facebookPath}'
+            path: '<path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>'
         },
         reddit: {
             href: 'https://www.reddit.com/r/TKASYLUM',
-            path: '${redditPath}'
+            path: '<path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.37-4.33 3.79.85c.08.85.79 1.51 1.65 1.51 1.1 0 1.99-.89 1.99-1.99s-.89-2-1.99-2c-.88 0-1.61.58-1.86 1.38l-4.22-.95c-.2-.04-.4.07-.47.27L10.3 8.01C7.81 8.07 5.56 8.71 3.9 9.72 3.33 8.94 2.42 8.46 1.45 8.46c-1.65 0-3 1.35-3 3 0 1.13.63 2.11 1.56 2.62-.06.3-.1.61-.1.92 0 4.14 4.7 7.5 10.5 7.5s10.5-3.36 10.5-7.5c0-.31-.04-.62-.1-.92.93-.51 1.56-1.49 1.56-2.62zM5.5 13.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>'
         }
     };
 
@@ -180,7 +154,7 @@ htmlFiles.forEach(filePath => {
         if (!styleEl) {
             styleEl = document.createElement('style');
             styleEl.id = 'kota-social-styles';
-            styleEl.innerHTML = \`
+            styleEl.innerHTML = `
                 /* Reorder main container sections visually using CSS Flexbox order */
                 .framer-YnkKJ > .framer-11utm1x-container { order: -1000 !important; }
                 .framer-YnkKJ > [data-framer-name="Hero Section"] { order: 2 !important; }
@@ -455,7 +429,7 @@ htmlFiles.forEach(filePath => {
                 }
 
 
-            \`;
+            `;
             document.head.appendChild(styleEl);
         }
         setupCounterAnimations();
@@ -501,7 +475,7 @@ htmlFiles.forEach(filePath => {
 
         // browser arrow SVG fallback fix
         try {
-            const rawArrowSvg = \`<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-up-right"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/></svg>\`;
+            const rawArrowSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-up-right"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/></svg>`;
             document.querySelectorAll('.framer-1wdch0p .svgContainer, .framer-daxxmo .svgContainer').forEach(container => {
                 container.innerHTML = rawArrowSvg;
             });
@@ -528,7 +502,7 @@ htmlFiles.forEach(filePath => {
         if (!document.getElementById('kota-sidebar-css')) {
             const style = document.createElement('style');
             style.id = 'kota-sidebar-css';
-            style.innerHTML = \`
+            style.innerHTML = `
                 [data-framer-name="Side Bar"] > div:not([data-framer-name]) {
                     display: none !important;
                 }
@@ -582,7 +556,7 @@ htmlFiles.forEach(filePath => {
                 [data-framer-name="Side Bar"] a.framer-8vx74n:hover > div[data-framer-name] {
                     opacity: 1 !important;
                 }
-            \`;
+            `;
             document.head.appendChild(style);
         }
 
@@ -866,7 +840,7 @@ htmlFiles.forEach(filePath => {
                 '/* Show our injected container */',
                 '[data-framer-name="About Me"] .kota-about-text-wrap,',
                 '#about .kota-about-text-wrap { display: block !important; }'
-            ].join('\\n');
+            ].join('\n');
             document.head.appendChild(s);
         }
 
@@ -1040,7 +1014,7 @@ htmlFiles.forEach(filePath => {
         if (!document.getElementById('kota-pricing-css')) {
             const style = document.createElement('style');
             style.id = 'kota-pricing-css';
-            style.innerHTML = \`
+            style.innerHTML = `
                 [data-framer-name="Price"] [data-framer-component-type="RichTextContainer"] {
                     overflow: visible !important;
                     width: auto !important;
@@ -1058,7 +1032,7 @@ htmlFiles.forEach(filePath => {
                     height: auto !important;
                     align-items: baseline !important;
                 }
-            \`;
+            `;
             document.head.appendChild(style);
         }
 
@@ -1119,7 +1093,7 @@ htmlFiles.forEach(filePath => {
                     pointContainers.forEach(container => {
                         const name = container.getAttribute('data-framer-name') || '';
                         let idx = -1;
-                        const match = name.match(/Point\s+(\d+)/i);
+                        const match = name.match(/Points+(d+)/i);
                         if (match) {
                             idx = parseInt(match[1], 10) - 1;
                         }
@@ -1163,7 +1137,7 @@ htmlFiles.forEach(filePath => {
         if (!document.getElementById('kota-awards-css')) {
             const style = document.createElement('style');
             style.id = 'kota-awards-css';
-            style.innerHTML = \`
+            style.innerHTML = `
                 [data-framer-name="Awards Section"], [data-framer-name="Awards"] { display: none !important; }
                 .award-item {
                     display: flex;
@@ -1214,7 +1188,7 @@ htmlFiles.forEach(filePath => {
                     font-size: 16px;
                     margin-top: 8px;
                 }
-            \`;
+            `;
             document.head.appendChild(style);
         }
 
@@ -1230,7 +1204,7 @@ htmlFiles.forEach(filePath => {
                 if (isFirst) {
                     const wrap = award.querySelector('[data-framer-name="Wrap"]');
                     if (wrap) {
-                        wrap.innerHTML = \`
+                        wrap.innerHTML = `
                            <div class="award-item">
                              <div class="award-icon-wrapper">
                                <img src="assets/silverb.avif" alt="YouTube Silver Play Button" class="award-icon">
@@ -1239,7 +1213,7 @@ htmlFiles.forEach(filePath => {
                              <div class="award-desc">Awarded for surpassing 100K subscribers</div>
                              <div class="award-meta">THE KOTA — 653K+ Subscribers</div>
                            </div>
-                        \`;
+                        `;
                         award.removeAttribute('href');
                         award.style.setProperty('cursor', 'default', 'important');
                         award.style.setProperty('border-radius', '32px', 'important');
@@ -1586,7 +1560,7 @@ htmlFiles.forEach(filePath => {
             if (node.getAttribute('data-framer-name') === 'Logo') {
                 const img = node.querySelector('img');
                 if (!img) {
-                    node.innerHTML = \`<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="\` + prefix + \`Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>\`;
+                    node.innerHTML = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="` + prefix + `Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>`;
                 } else if (img.getAttribute('src') !== prefix + 'Assets/Kota Text.png') {
                     img.setAttribute('src', prefix + 'Assets/Kota Text.png');
                 }
@@ -1596,7 +1570,7 @@ htmlFiles.forEach(filePath => {
             if (node.getAttribute('data-styles-preset') === 'tOUh8Virz') {
                 const text = node.textContent || '';
                 if (text.includes("Hi, I'm") || text.includes("Jayden") || text.includes("Kota")) {
-                    node.innerHTML = 'Hi, I\\'m <span style="--framer-text-color: var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255));" class="framer-text">The Kota</span>,';
+                    node.innerHTML = 'Hi, I\'m <span style="--framer-text-color: var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255));" class="framer-text">The Kota</span>,';
                 } else {
                     node.innerHTML = 'Working as a <span style="--framer-text-color: var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255));" class="framer-text">Content Creator</span> on <span style="--framer-text-color: var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255));" class="framer-text">YouTube</span>';
                 }
@@ -1730,7 +1704,7 @@ htmlFiles.forEach(filePath => {
                 if (node.getAttribute('data-framer-name') === 'Logo') {
                     const img = node.querySelector('img');
                     if (!img) {
-                        node.innerHTML = \`<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="\` + prefix + \`Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>\`;
+                        node.innerHTML = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="` + prefix + `Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>`;
                     } else if (img.getAttribute('src') !== prefix + 'Assets/Kota Text.png') {
                         img.setAttribute('src', prefix + 'Assets/Kota Text.png');
                     }
@@ -1869,164 +1843,111 @@ htmlFiles.forEach(filePath => {
         }
     });
 })();
-</script>
-`.trim();
-
-    const preloaderCss = `
-#kota-preloader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #000000;
-    z-index: 999999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-    opacity: 1;
-    visibility: visible;
-}
-#kota-preloader.fade-out {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none !important;
-}
-#kota-preloader .loader-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-#kota-preloader .loader-video {
-    width: 160px;
-    height: auto;
-}
-#kota-preloader .loader-bar {
-    width: 160px;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-}
-#kota-preloader .loader-bar-fill {
-    width: 100%;
-    height: 100%;
-    background: #EA0813;
-    position: absolute;
-    left: -100%;
-    animation: loading-progress 1.5s infinite ease-in-out;
-}
-@keyframes loading-progress {
-    0% { left: -100%; }
-    50% { left: 0%; }
-    100% { left: 100%; }
-}
-`.trim();
-
-    const preloaderHtml = `
-<div id="kota-preloader">
-    <div class="loader-content">
-        <video class="loader-video" src="${prefix}Assets/loading.mp4" autoplay loop muted playsinline></video>
-        <div class="loader-bar"><div class="loader-bar-fill"></div></div>
-    </div>
-</div>
-`.trim();
-
-    let content = fs.readFileSync(filePath, 'utf8');
-    const original = content;
-
-    // Normalize newlines to Unix
-    content = content.replace(/\r\n/g, '\n');
-
-    // 1. Insert/Replace inline script tag robustly
-    const scriptRegex = /<script>\s*\(\s*function\s*\(\)\s*\{[\s\S]*?<\/script>/i;
-    if (content.match(scriptRegex)) {
-        content = content.replace(scriptRegex, inlineScript);
-    } else {
-        // Insert right after the <head> tag
-        const headIdx = content.indexOf('<head>');
-        if (headIdx !== -1) {
-            content = content.substring(0, headIdx + 6) + '\n' + inlineScript + content.substring(headIdx + 6);
+    try {
+      if (localStorage.get("__framer_force_showing_editorbar_since")) {
+        const n = document.createElement("link");
+        n.rel = "modulepreload";
+        n.href = "https://framer.com/edit/init.mjs";
+        document.head.appendChild(n);
+      }
+    } catch (e) { }
+    (() => {
+      function u() {
+        function n(t, e, i) {
+          let r = document.createElement("a");
+          ((r.href = t),
+            (r.target = i),
+            (r.rel = e),
+            document.body.appendChild(r),
+            r.click(),
+            r.remove());
         }
-    }
-
-    // 2. Insert or Replace CSS Preloader inside <head>
-    const preloaderCssRegex = /<style>\s*#kota-preloader[\s\S]*?<\/style>/i;
-    if (content.match(preloaderCssRegex)) {
-        content = content.replace(preloaderCssRegex, `<style>\n${preloaderCss}\n</style>`);
-    } else {
-        const headIdx = content.indexOf('<head>');
-        if (headIdx !== -1) {
-            content = content.substring(0, headIdx + 6) + `\n<style>\n${preloaderCss}\n</style>` + content.substring(headIdx + 6);
+        function o(t) {
+          if (this.dataset.hydrated) {
+            this.removeEventListener("click", o);
+            return;
+          }
+          (t.preventDefault(), t.stopPropagation());
+          let e = this.getAttribute("href");
+          if (!e) return;
+          if (
+            /Mac|iPod|iPhone|iPad/u.test(navigator.userAgent)
+              ? t.metaKey
+              : t.ctrlKey
+          )
+            return n(e, "", "_blank");
+          let r = this.getAttribute("rel") ?? "",
+            c = this.getAttribute("target") ?? "";
+          n(e, r, c);
         }
-    }
-
-    // 3. Insert or Replace HTML Preloader right after <body> starts
-    const preloaderHtmlRegex = /<div id="kota-preloader">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>\s*<\/div>/i;
-    if (content.match(preloaderHtmlRegex)) {
-        content = content.replace(preloaderHtmlRegex, preloaderHtml);
-    } else {
-        content = content.replace(/(<body[^>]*?>)/i, `$1\n${preloaderHtml}`);
-    }
-
-    // 3.5. Inject GSAP CDN scripts before </body> if not present
-    if (!content.includes('gsap.min.js')) {
-        content = content.replace(/<\/body>/i, `<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>\n<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>\n</body>`);
-    }
-
-    // 4. Perform static HTML updates (excluding counter values/labels to prevent hydration animation mismatches)
-
-    // A. Location Replacements (using a robust whitespace/newline resilient regex for <p> blocks)
-    const locationParaRegex = /(<p\s+[^>]*?class="framer-text\s+framer-styles-preset-1c4xv0t"[^>]*?>)\s*San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA\s*(<\/p>)/gi;
-    content = content.replace(locationParaRegex, '$1Colombo,<br class="framer-text" />Sri Lanka$2');
-
-    // Fallback static replacements for loose location strings
-    content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>\s*USA/gi, 'Colombo,<br class="framer-text" />Sri Lanka');
-    content = content.replace(/San\s+Francisco,\s+CA\s*<br\s+class="framer-text"\s*\/>/gi, 'Colombo,<br class="framer-text" />Sri Lanka');
-    content = content.replace(/San\s+Francisco,\s+CA/gi, 'Colombo,');
-
-    // B. Available for 3 projects -> Promotions
-    content = content.replace(/>\s*3\s+projects\s*</gi, '>Promotions<');
-
-    // C. Buttons
-    content = content.replace(/>\s*Buy\s+Now\s*</gi, '>Subscribe Now<');
-    content = content.replace(/href="https:\/\/ridhwanco\.lemonsqueezy\.com\/buy\/7d6fede4-e97c-4bb6-93bf-5d182947c2bc"/g, 'href="https://www.youtube.com/@TheKota"');
-    content = content.replace(/href="https:\/\/www\.youtube\.com\/@TheKota\?sub_confirmation=1"/g, 'href="https://www.youtube.com/@TheKota"');
-    content = content.replace(/>\s*View\s+My\s+Work\s*</gi, '>Kota Extra<');
-    content = content.replace(/data-framer-name="Work"\s+href="work\.html"/g, 'data-framer-name="Work" href="https://www.youtube.com/@kotaextra" target="_blank" rel="noopener"');
-
-    // D. Favicon Source Replacement
-    content = content.replace(/https:\/\/framerusercontent\.com\/images\/BUqmbxZDP4XMeSAW74XXkInAt4\.png/g, prefix + 'Assets/Hero.png');
-
-    // E. Static Swaps for Assets
-    content = content.replace(/Sw1RXitxqpkOiWs8LmcITuaU/g, prefix + 'Assets/Hero.png');
-    content = content.replace(/W0Flr9u5hJlVmyjWEYDshQ2sPY/g, prefix + 'Assets/Hero.png');
-    content = content.replace(/rjytgkPUTbFjrXmIX6Muq6ybMLY/g, prefix + 'Assets/Kota Text.png');
-
-    // F. Static Header Logo Replacement
-    const logoRegex = /(<a\s+[^>]*?data-framer-name="Logo"[^>]*?>)([\s\S]*?)(<\/a>)/g;
-    content = content.replace(logoRegex, (match, openTag, innerHtml, closeTag) => {
-        const replacementInner = `<div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="${prefix}Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div>`;
-        return openTag + replacementInner + closeTag;
-    });
-
-    // F.5. Static Ticker Text Replacement
-    const tickerRegex = /(<h1\s+[^>]*?class="framer-text\s+framer-styles-preset-1saos00"[^>]*?>)\s*Selected\s+work\s*(<\/h1>)/gi;
-    const tickerReplacement = '<span style="display: inline-flex; align-items: center; gap: 16px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="vertical-align: middle;">THE KOTA</span></span>';
-    content = content.replace(tickerRegex, `$1${tickerReplacement}$2`);
-    content = content.replace(/>\s*Selected\s+work\s*<\/h1>/gi, `>${tickerReplacement}</h1>`);
-    content = content.replace(/TKA SYLUM/g, 'THE KOTA');
-
-    // G. Footer Copyright
-    content = content.replace(/<strong class="framer-text">Ridhwan Co\.<\/strong>/g, '<a href="https://hexcode.lk/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;"><strong class="framer-text">HexCode</strong></a>');
-
-    if (content !== original) {
-        fs.writeFileSync(filePath, content, 'utf8');
-        console.log(`Successfully rebranded ${relativePath}`);
-    } else {
-        console.log(`No changes made to ${relativePath}`);
-    }
-});
+        function a(t) {
+          if (this.dataset.hydrated) {
+            this.removeEventListener("auxclick", o);
+            return;
+          }
+          (t.preventDefault(), t.stopPropagation());
+          let e = this.getAttribute("href");
+          e && n(e, "", "_blank");
+        }
+        function s(t) {
+          if (this.dataset.hydrated) {
+            this.removeEventListener("keydown", s);
+            return;
+          }
+          if (t.key !== "Enter") return;
+          (t.preventDefault(), t.stopPropagation());
+          let e = this.getAttribute("href");
+          if (!e) return;
+          let i = this.getAttribute("rel") ?? "",
+            r = this.getAttribute("target") ?? "";
+          n(e, i, r);
+        }
+        document.querySelectorAll("[data-nested-link]").forEach((t) => {
+          t instanceof HTMLElement &&
+            (t.addEventListener("click", o),
+              t.addEventListener("auxclick", a),
+              t.addEventListener("keydown", s));
+        });
+      }
+      return u;
+    })()();
+    !(function () {
+      var w = "framer_variant";
+      function u(a, r) {
+        let e = r.indexOf("#"),
+          t = e === -1 ? r : r.substring(0, e),
+          o = e === -1 ? "" : r.substring(e),
+          n = t.indexOf("?"),
+          h = n === -1 ? t : t.substring(0, n),
+          d = n === -1 ? "" : t.substring(n),
+          s = new URLSearchParams(d),
+          m = new URLSearchParams(a);
+        for (let [i, l] of m) s.has(i) || (i !== w && s.append(i, l));
+        let c = s.toString();
+        return c === "" ? t + o : h + "?" + c + o;
+      }
+      var g =
+        'div#main a[href^="#"],div#main a[href^="/"],div#main a[href^="."]',
+        f = "div#main a[data-framer-preserve-params]",
+        S = document.currentScript?.hasAttribute(
+          "data-preserve-internal-params",
+        );
+      if (
+        window.location.search &&
+        !navigator.webdriver &&
+        !/bot|-google|google-|yandex|ia_archiver|crawl|spider/iu.test(
+          navigator.userAgent,
+        )
+      ) {
+        let a = document.querySelectorAll(S ? `${g},${f}` : f);
+        for (let r of a) {
+          let e = u(window.location.search, r.href);
+          r.setAttribute("href", e);
+        }
+      }
+    })();
+    typeof document < "u" &&
+      (window.process = {
+        ...window.process,
+        env: { ...window.process?.env, NODE_ENV: "production" },
+      });
