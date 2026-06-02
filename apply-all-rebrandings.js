@@ -178,7 +178,7 @@ htmlFiles.forEach(filePath => {
             styleEl.id = 'kota-social-styles';
             styleEl.innerHTML = \`
                 /* Reorder main container sections visually using CSS Flexbox order */
-                .framer-YnkKJ > .framer-11utm1x-container { order: 1 !important; }
+                .framer-YnkKJ > .framer-11utm1x-container { order: -1000 !important; }
                 .framer-YnkKJ > [data-framer-name="Hero Section"] { order: 2 !important; }
                 .framer-YnkKJ > [data-framer-name="Experience Section"] { order: 3 !important; }
                 .framer-YnkKJ > [data-framer-name="Counter Section"] { order: 4 !important; }
@@ -241,6 +241,12 @@ htmlFiles.forEach(filePath => {
                     fill: #EA0813 !important;
                     color: #EA0813 !important;
                 }
+
+                /* Hide the CEO of Avade subtext in footer */
+                .framer-gpsxw5 .framer-1aopvdp {
+                    display: none !important;
+                }
+
                 /* Ensure Icon buttons inside Social Icons render their SVG reliably and centered */
                 [data-framer-name="Social Icons"] [data-framer-name="Icon"],
                 .framer-1nsshvn,
