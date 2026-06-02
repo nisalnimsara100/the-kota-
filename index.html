@@ -399,8 +399,10 @@
     }
 
     function setupSidebarScrollSpy() {
+        if (window.sidebarScrollSpyInitialized) return;
         const sidebarLinks = document.querySelectorAll('.framer-8vx74n');
         if (!sidebarLinks.length) return;
+        window.sidebarScrollSpyInitialized = true;
 
         const sectionMap = {
             'Home': 'home',
@@ -422,11 +424,12 @@
                 }
                 .kota-sidebar-active {
                     position: relative !important;
+                    overflow: visible !important;
                 }
                 .kota-sidebar-active::before {
                     content: '';
                     position: absolute;
-                    left: -32px;
+                    left: -25px;
                     top: 50%;
                     transform: translateY(-50%);
                     width: 8px;
@@ -434,21 +437,19 @@
                     background-color: white;
                     border-radius: 50%;
                     box-shadow: 0 0 10px 2px rgba(234, 8, 19, 0.7);
-                    z-index: 100;
-                    transition: top 0.3s ease, left 0.3s ease;
+                    z-index: 9999;
+                    pointer-events: none;
                 }
             `;
             document.head.appendChild(style);
         }
 
-        const sections = [];
+        const linkMap = {};
         sidebarLinks.forEach(link => {
             const name = link.getAttribute('data-framer-name');
             if (name && sectionMap[name]) {
-                const sectionEl = document.getElementById(sectionMap[name]);
-                if (sectionEl) {
-                    sections.push({ link, sectionEl, id: sectionMap[name] });
-                }
+                const sectionId = sectionMap[name];
+                linkMap[sectionId] = link;
             }
             
             link.addEventListener('click', (e) => {
@@ -463,26 +464,29 @@
             });
         });
 
-        function onScroll() {
-            let currentSection = null;
-            const scrollPos = window.scrollY + window.innerHeight / 2.5;
+        const observerOptions = {
+            root: null,
+            rootMargin: '-30% 0px -30% 0px',
+            threshold: 0
+        };
 
-            sections.forEach(({ link, sectionEl }) => {
-                const top = sectionEl.offsetTop;
-                const height = sectionEl.offsetHeight;
-                if (scrollPos >= top && scrollPos < top + height) {
-                    currentSection = link;
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    const activeLink = linkMap[id];
+                    if (activeLink) {
+                        sidebarLinks.forEach(l => l.classList.remove('kota-sidebar-active'));
+                        activeLink.classList.add('kota-sidebar-active');
+                    }
                 }
             });
+        }, observerOptions);
 
-            if (currentSection) {
-                sidebarLinks.forEach(l => l.classList.remove('kota-sidebar-active'));
-                currentSection.classList.add('kota-sidebar-active');
-            }
-        }
-
-        window.addEventListener('scroll', onScroll, { passive: true });
-        setTimeout(onScroll, 500);
+        Object.values(sectionMap).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
     }
 
     function setupYoutubeCards() {
