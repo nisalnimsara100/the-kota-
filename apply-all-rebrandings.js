@@ -814,14 +814,26 @@ htmlFiles.forEach(filePath => {
                     gap: 8px;
                     padding: 24px;
                     text-align: center;
-                    height: 100%;
+                    height: auto;
                     width: 100%;
                 }
-                .award-icon {
-                    width: 100px;
-                    height: 100px;
-                    object-fit: contain;
+                .award-icon-wrapper {
+                    width: 84px;
+                    height: 58px;
+                    overflow: hidden;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
                     margin-bottom: 12px;
+                    border-radius: 8px;
+                }
+                .award-icon {
+                    width: 130px;
+                    height: 130px;
+                    object-fit: cover;
+                    object-position: center;
+                    flex-shrink: 0;
+                    max-width: none;
                 }
                 .award-title {
                     font-family: Rajdhani, sans-serif;
@@ -848,15 +860,22 @@ htmlFiles.forEach(filePath => {
         }
 
         awardsSections.forEach(section => {
+            section.style.setProperty('display', 'flex', 'important');
+            section.style.setProperty('justify-content', 'center', 'important');
+            section.style.setProperty('align-items', 'center', 'important');
+
             const awards = section.querySelectorAll('a[data-framer-name="Variant 1"], a[data-framer-name="Variant 2"]');
+            let isFirst = true;
+            
             awards.forEach(award => {
-                const text = award.textContent || '';
-                if (text.includes('SOTD E-commerce') || award.innerHTML.includes('YouTube Silver Play Button')) {
+                if (isFirst) {
                     const wrap = award.querySelector('[data-framer-name="Wrap"]');
                     if (wrap) {
                         wrap.innerHTML = \`
                            <div class="award-item">
-                             <img src="assets/silverb.avif" alt="YouTube Silver Play Button" class="award-icon">
+                             <div class="award-icon-wrapper">
+                               <img src="assets/silverb.avif" alt="YouTube Silver Play Button" class="award-icon">
+                             </div>
                              <div class="award-title">YouTube Silver Play Button</div>
                              <div class="award-desc">Awarded for surpassing 100K subscribers</div>
                              <div class="award-meta">THE KOTA — 653K+ Subscribers</div>
@@ -865,9 +884,16 @@ htmlFiles.forEach(filePath => {
                         award.removeAttribute('href');
                         award.style.setProperty('cursor', 'default', 'important');
                         award.style.setProperty('border-radius', '32px', 'important');
+                        award.style.setProperty('height', 'max-content', 'important');
+                        award.style.setProperty('align-self', 'center', 'important');
                     }
-                } else if (award.innerHTML.includes('Subscribers')) {
-                    award.innerHTML = award.innerHTML.replace(/[0-9]+[KMBkmb]?\\+?\\s+Subscribers/gi, '653K+ Subscribers');
+                    isFirst = false;
+                } else {
+                    if (award.parentElement && award.parentElement.className.includes('-container')) {
+                        award.parentElement.style.setProperty('display', 'none', 'important');
+                    } else {
+                        award.style.setProperty('display', 'none', 'important');
+                    }
                 }
             });
         });
