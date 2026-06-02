@@ -2,9 +2,9 @@
   "title": "I make reaction videos. It is that simple !!",
   "bio": "THE KOTA is one of Sri Lanka's top and most popular reaction and comedy channels on YouTube, with over 653K subscribers. Known for his highly engaging, humorous, and satirical meme reactions and movie reviews, he has built a dedicated community referred to as the \"ChootyGang\".",
   "sliding_images": [
-    "https://framerusercontent.com/images/g1RWtjflHS2M53QcEU764KSVuik.svg",
-    "https://framerusercontent.com/images/rtCbmzN4khPthDxAW6vxpyN3as.svg",
-    "https://framerusercontent.com/images/ZTA5Vxos3aZkpvYaimkTbJufRs.svg",
-    "https://framerusercontent.com/images/5x5ca9FKJLnltN8Z6xTKt34kIXg.jpg"
+    "../Assets/c1.png",
+    "../Assets/c2.png",
+    "../Assets/c3.png",
+    "../Assets/c4.png"
   ]
 }

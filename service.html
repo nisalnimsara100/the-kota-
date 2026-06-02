@@ -502,7 +502,7 @@
 
     function setupYoutubeCards() {
         debugLog('setupYoutubeCards() starting...');
-        fetch(prefix + "data/video.json")
+        fetch(prefix + "data/video.json?v=" + Date.now())
             .then(res => res.json())
             .then(videos => {
                 const anchors = document.querySelectorAll('a');
@@ -590,7 +590,7 @@
 
     function setupTestimonials() {
         debugLog('setupTestimonials() starting...');
-        fetch(prefix + "data/comments.json")
+        fetch(prefix + "data/comments.json?v=" + Date.now())
             .then(res => res.json())
             .then(comments => {
                 if (!Array.isArray(comments) || comments.length === 0) return;
@@ -640,7 +640,7 @@
             applyAboutData(aboutDataCached);
             return;
         }
-        fetch(prefix + "data/about.json")
+        fetch(prefix + "data/about.json?v=" + Date.now())
             .then(res => res.json())
             .then(data => {
                 aboutDataCached = data;
@@ -652,55 +652,121 @@
     function applyAboutData(data) {
         if (!data) return;
         
-        const paragraphs = document.querySelectorAll('[data-framer-name="About Me Section"] p');
-        paragraphs.forEach(p => {
-            const text = p.textContent || '';
-            if (
-                text.includes("Behind every great") || 
-                text.includes("even greater story") || 
-                (data.title && text.includes(data.title.substring(0, 15)))
-            ) {
-                if (p.textContent !== data.title) {
-                    p.textContent = data.title;
-                    p.style.fontFamily = '"Rajdhani", sans-serif';
-                    p.innerHTML = data.title;
+        const aboutSection = document.getElementById('about') || document.querySelector('[data-framer-name="About Me"]');
+        if (!aboutSection) return;
+
+        // Force ID to be 'about' to prevent React hydration from stripping it
+        if (aboutSection.id !== 'about') {
+            aboutSection.id = 'about';
+        }
+
+        // ── 1. Inject CSS to override all About title & bio content ──────────
+        // This approach uses a CSS class + direct DOM injection instead of fragile
+        // text-search through Framer's character-per-span structure.
+        if (!document.getElementById('kota-about-css')) {
+            const s = document.createElement('style');
+            s.id = 'kota-about-css';
+            s.textContent = [
+                '/* Hide all original Framer elements in Text container */',
+                '[data-framer-name="About Me"] [data-framer-name="Text"] > :not(.kota-about-text-wrap),',
+                '#about [data-framer-name="Text"] > :not(.kota-about-text-wrap) { display: none !important; }',
+                '/* Show our injected container */',
+                '[data-framer-name="About Me"] .kota-about-text-wrap,',
+                '#about .kota-about-text-wrap { display: block !important; }'
+            ].join('\n');
+            document.head.appendChild(s);
+        }
+
+        // ── 2. Update Title + Bio inside [data-framer-name="Text"] ───────────
+        const textContainer = aboutSection.querySelector('[data-framer-name="Text"]');
+        if (textContainer) {
+            // Hide all other children programmatically to prevent hydration flashes
+            Array.from(textContainer.children).forEach(child => {
+                if (!child.classList.contains('kota-about-text-wrap')) {
+                    child.style.setProperty('display', 'none', 'important');
                 }
-            } else if (
-                text.includes("meaning and purpose") || 
-                text.includes("story is paramount") || 
-                text.includes("THE KOTA") || 
-                text.includes("ChootyGang") ||
-                (text.includes("San Francisco") && text.includes("designer"))
-            ) {
-                if (p.textContent !== data.bio) {
-                    p.textContent = data.bio;
-                    p.style.fontFamily = '"Rajdhani", sans-serif';
-                    p.style.color = 'rgba(255, 255, 255, 0.6)';
-                }
+            });
+
+            let wrap = textContainer.querySelector('.kota-about-text-wrap');
+            if (!wrap) {
+                wrap = document.createElement('div');
+                wrap.className = 'kota-about-text-wrap';
+                wrap.style.cssText = 'padding: 0; margin: 0;';
+                textContainer.appendChild(wrap);
             }
-        });
-        
+
+            // Title element
+            let titleEl = wrap.querySelector('.kota-about-title');
+            if (!titleEl) {
+                titleEl = document.createElement('p');
+                titleEl.className = 'kota-about-title';
+                titleEl.style.cssText = [
+                    'font-family: "Rajdhani", sans-serif',
+                    'font-weight: 500',
+                    'font-size: 48px',
+                    'color: #ffffff',
+                    'line-height: 56px',
+                    'letter-spacing: -1.38px',
+                    'text-align: left',
+                    'margin: 0 0 16px 0',
+                    'display: block'
+                ].join(';');
+                wrap.appendChild(titleEl);
+            }
+            if (titleEl.textContent !== data.title) {
+                titleEl.textContent = data.title;
+            }
+
+            // Bio element
+            let bioEl = wrap.querySelector('.kota-about-bio');
+            if (!bioEl) {
+                bioEl = document.createElement('p');
+                bioEl.className = 'framer-text framer-styles-preset-1c4xv0t kota-about-bio';
+                bioEl.style.cssText = [
+                    'font-family: "Rajdhani", sans-serif',
+                    'font-weight: 400',
+                    'font-size: 16px',
+                    'color: rgba(255,255,255,0.6)',
+                    'line-height: 1.6',
+                    'text-align: left',
+                    'margin: 0',
+                    'display: block'
+                ].join(';');
+                wrap.appendChild(bioEl);
+            }
+            if (bioEl.textContent !== data.bio) {
+                bioEl.textContent = data.bio;
+            }
+        }
+
+        // 3. Update Slideshow Images
         if (Array.isArray(data.sliding_images)) {
-            const imageContainers = document.querySelectorAll('[data-framer-name^="About Image"]');
-            imageContainers.forEach(container => {
-                const img = container.querySelector('img');
-                if (img) {
-                    const name = container.getAttribute('data-framer-name') || '';
-                    let idx = -1;
-                    if (name.includes('One')) idx = 0;
-                    else if (name.includes('Two')) idx = 1;
-                    else if (name.includes('Three')) idx = 2;
-                    else if (name.includes('Four')) idx = 3;
-                    
-                    if (idx !== -1 && data.sliding_images[idx]) {
-                        let imgUrl = data.sliding_images[idx];
-                        if (!imgUrl.startsWith('http') && !imgUrl.startsWith('data:')) {
-                            imgUrl = prefix + imgUrl;
+            const imgs = aboutSection.querySelectorAll('img');
+            const slideImgs = Array.from(imgs).filter(img => {
+                const src = img.getAttribute('src') || '';
+                return !src.includes('arrow=') && !img.closest('button');
+            });
+            
+            slideImgs.forEach((img, idx) => {
+                const imgCount = data.sliding_images.length;
+                if (imgCount === 0) return;
+                const targetIdx = idx % imgCount;
+                
+                if (data.sliding_images[targetIdx]) {
+                    let imgUrl = data.sliding_images[targetIdx];
+                    if (!imgUrl.startsWith('http') && !imgUrl.startsWith('data:')) {
+                        // Clean up leading "../" or "./" from the JSON path to construct correct page-level path
+                        let cleanPath = imgUrl;
+                        if (cleanPath.startsWith('../')) {
+                            cleanPath = cleanPath.slice(3);
+                        } else if (cleanPath.startsWith('./')) {
+                            cleanPath = cleanPath.slice(2);
                         }
-                        if (img.getAttribute('srcset')) img.removeAttribute('srcset');
-                        if (img.getAttribute('src') !== imgUrl) {
-                            img.setAttribute('src', imgUrl);
-                        }
+                        imgUrl = prefix + cleanPath;
+                    }
+                    if (img.getAttribute('srcset')) img.removeAttribute('srcset');
+                    if (img.getAttribute('src') !== imgUrl) {
+                        img.setAttribute('src', imgUrl);
                     }
                 }
             });
@@ -712,7 +778,7 @@
             applyBrandsData(brandsDataCached);
             return;
         }
-        fetch(prefix + "data/brands.json")
+        fetch(prefix + "data/brands.json?v=" + Date.now())
             .then(res => res.json())
             .then(data => {
                 brandsDataCached = data;
@@ -724,13 +790,13 @@
     function applyBrandsData(data) {
         if (!data) return;
         
-        const partnerSection = document.querySelector('[data-framer-name="Partner"]');
-        if (partnerSection) {
+        const partnerSections = document.querySelectorAll('[data-framer-name="Partner"]');
+        partnerSections.forEach(partnerSection => {
             const titleP = partnerSection.querySelector('[data-framer-name="Service"] p');
             if (titleP && data.title && titleP.textContent.trim() !== data.title) {
                 titleP.textContent = data.title;
             }
-        }
+        });
         
         if (Array.isArray(data.logos)) {
             const logoContainers = document.querySelectorAll('[data-framer-name^="Client Logo"]');
@@ -765,7 +831,7 @@
             applyPricingData(pricingDataCached);
             return;
         }
-        fetch(prefix + "data/pricing.json")
+        fetch(prefix + "data/pricing.json?v=" + Date.now())
             .then(res => res.json())
             .then(data => {
                 pricingDataCached = data;
