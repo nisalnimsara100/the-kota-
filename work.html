@@ -3,59 +3,6 @@
 <!-- Published May 21, 2026, 8:40 AM UTC -->
 <html lang="en" data-redirect-timezone="1">
 <head>
-<style>
-#kota-preloader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #000000;
-    z-index: 999999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-    opacity: 1;
-    visibility: visible;
-}
-#kota-preloader.fade-out {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none !important;
-}
-#kota-preloader .loader-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-#kota-preloader .loader-video {
-    width: 160px;
-    height: auto;
-}
-#kota-preloader .loader-bar {
-    width: 160px;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-}
-#kota-preloader .loader-bar-fill {
-    width: 100%;
-    height: 100%;
-    background: #EA0813;
-    position: absolute;
-    left: -100%;
-    animation: loading-progress 1.5s infinite ease-in-out;
-}
-@keyframes loading-progress {
-    0% { left: -100%; }
-    50% { left: 0%; }
-    100% { left: 100%; }
-}
-</style>
 <script>
 (function() {
     const preloaderStart = Date.now();
@@ -119,6 +66,23 @@
             styleEl = document.createElement('style');
             styleEl.id = 'kota-social-styles';
             styleEl.innerHTML = `
+                /* Reorder main container sections visually using CSS Flexbox order */
+                .framer-YnkKJ > .framer-11utm1x-container { order: 1 !important; }
+                .framer-YnkKJ > [data-framer-name="Hero Section"] { order: 2 !important; }
+                .framer-YnkKJ > [data-framer-name="Experience Section"] { order: 3 !important; }
+                .framer-YnkKJ > [data-framer-name="Counter Section"] { order: 4 !important; }
+                .framer-YnkKJ > [data-framer-name="Selected Works"] { order: 5 !important; }
+                .framer-YnkKJ > [data-framer-name="My Services"] { order: 6 !important; }
+                .framer-YnkKJ > [data-framer-name="About Me"] { order: 7 !important; }
+                .framer-YnkKJ > [data-framer-name="Tech Stack"] { order: 8 !important; }
+                .framer-YnkKJ > [data-framer-name="Partner"] { order: 9 !important; }
+                .framer-YnkKJ > [data-framer-name="Testimonials"] { order: 10 !important; }
+                .framer-YnkKJ > [data-framer-name="Awards"] { order: 11 !important; }
+                .framer-YnkKJ > [data-framer-name="Work Process"] { order: 12 !important; }
+                .framer-YnkKJ > [data-framer-name="Pricing Section"] { order: 13 !important; }
+                .framer-YnkKJ > [data-framer-name="FAQ"] { order: 14 !important; }
+                .framer-YnkKJ > [data-framer-name="Contact For work"] { order: 15 !important; }
+
                 [data-framer-name="Social Icons"] a svg,
                 [data-framer-name="Social Icons"] a svg *,
                 .framer-1s5m8nf a svg,
@@ -404,14 +368,7 @@
             // ignore
         }
 
-        // Swap sections: Experience Section before Counter Section (so it comes right after Hero Section)
-        const counterSec = document.querySelector('[data-framer-name="Counter Section"]');
-        const expSec = document.querySelector('[data-framer-name="Experience Section"]');
-        if (counterSec && expSec && counterSec.parentElement) {
-            if (counterSec.previousElementSibling !== expSec) {
-                counterSec.parentElement.insertBefore(expSec, counterSec);
-            }
-        }
+        // Swap sections (handled visually via CSS Flexbox order to prevent React hydration conflicts)
 
         // Ensure the Selected Work Ticker text shows the channel name and logo dynamically
         try {
@@ -426,6 +383,8 @@
 
         // Setup YouTube channel data, logos and 16:9 thumbnail sizing dynamically
         setupYoutubeCards();
+        setupTestimonials();
+        setupAwards();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
@@ -433,122 +392,212 @@
 
     function setupYoutubeCards() {
         debugLog('setupYoutubeCards() starting...');
-        const cards = [];
-        const anchors = document.querySelectorAll('a');
-        debugLog('Total <a> tags on page: ' + anchors.length);
-        anchors.forEach(a => {
-            const href = a.getAttribute('href') || '';
-            const name = a.getAttribute('data-framer-name') || '';
-            const parentName = a.parentElement ? (a.parentElement.getAttribute('data-framer-name') || '') : '';
-            if (
-                a._kotaYtId ||
-                href.includes('x---direct-mobile') ||
-                href.includes('helve-website-redesign') ||
-                href.includes('ui-ux-agency') ||
-                parentName === 'Selected Work' ||
-                name === 'Selected Work' ||
-                a.getAttribute('name') === 'Selected Work'
-            ) {
-                cards.push(a);
+        fetch(prefix + "data/video.json")
+            .then(res => res.json())
+            .then(videos => {
+                const anchors = document.querySelectorAll('a');
+                anchors.forEach(a => {
+                    const href = a.getAttribute('href') || '';
+                    const name = a.getAttribute('data-framer-name') || '';
+                    const parentName = a.parentElement ? (a.parentElement.getAttribute('data-framer-name') || '') : '';
+                    if (
+                        a._kotaYtId ||
+                        href.includes('x---direct-mobile') ||
+                        href.includes('helve-website-redesign') ||
+                        href.includes('ui-ux-agency') ||
+                        parentName === 'Selected Work' ||
+                        name === 'Selected Work' ||
+                        a.getAttribute('name') === 'Selected Work' ||
+                        (videos && (href === videos[0].youtube || href === videos[1].youtube || href === videos[2].youtube))
+                    ) {
+                        let video = null;
+                        if (href.includes('x---direct-mobile') || href === videos[0].youtube) {
+                            video = videos[0];
+                        } else if (href.includes('helve-website-redesign') || href === videos[1].youtube) {
+                            video = videos[1];
+                        } else if (href.includes('ui-ux-agency') || href === videos[2].youtube) {
+                            video = videos[2];
+                        }
+
+                        if (video) {
+                            a._kotaYtId = video.id;
+                            
+                            if (a.getAttribute('href') !== video.youtube) {
+                                a.setAttribute('href', video.youtube);
+                            }
+                            a.setAttribute('target', '_blank');
+                            a.setAttribute('rel', 'noopener');
+
+                            if (!a._kotaHasListener) {
+                                a._kotaHasListener = true;
+                                a.addEventListener("click", (e) => {
+                                    e.preventDefault();
+                                    window.open(video.youtube, "_blank", "noopener,noreferrer");
+                                });
+                            }
+
+                            const img = a.querySelector('img');
+                            if (img) {
+                                if (img.getAttribute('srcset')) img.removeAttribute('srcset');
+                                const expectedImg = prefix + video.thumbnail;
+                                if (img.getAttribute('src') !== expectedImg) {
+                                    img.setAttribute('src', expectedImg);
+                                }
+                            }
+
+                            const paragraphs = a.querySelectorAll('p');
+                            if (paragraphs.length >= 3) {
+                                const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">' + video.channel + '</span></span>';
+                                if (paragraphs[0].innerHTML !== ytLogo) {
+                                    paragraphs[0].innerHTML = ytLogo;
+                                }
+                                const ytTitle = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
+                                if (paragraphs[1].innerHTML !== ytTitle) {
+                                    paragraphs[1].innerHTML = ytTitle;
+                                }
+                            } else {
+                                const catP = a.querySelector('.framer-oivizu p, [style*="--framer-font-size: 20px"]');
+                                if (catP) {
+                                    const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">' + video.channel + '</span></span>';
+                                    if (catP.innerHTML !== ytLogo) {
+                                        catP.innerHTML = ytLogo;
+                                    }
+                                }
+                                const titleP = a.querySelector('.framer-wkncrm p, [style*="--framer-font-size: 40px"]');
+                                if (titleP) {
+                                    const ytTitle = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
+                                    if (titleP.innerHTML !== ytTitle) {
+                                        titleP.innerHTML = ytTitle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error("Failed to load video.json", err));
+    }
+
+    function setupTestimonials() {
+        debugLog('setupTestimonials() starting...');
+        fetch(prefix + "data/comments.json")
+            .then(res => res.json())
+            .then(comments => {
+                if (!Array.isArray(comments) || comments.length === 0) return;
+                const testimonialCards = document.querySelectorAll('div[data-framer-name="Testimonial Person Card"]');
+                if (testimonialCards.length === 0) return;
+                
+                testimonialCards.forEach((card, idx) => {
+                    const comment = comments[idx % comments.length];
+                    if (!comment) return;
+
+                    const reviewContainer = card.previousElementSibling;
+                    if (reviewContainer) {
+                        const p = reviewContainer.querySelector('p');
+                        if (p) {
+                            const expectedText = '“ ' + comment.text + ' ”';
+                            if (p.textContent.trim() !== expectedText) {
+                                p.textContent = expectedText;
+                            }
+                        }
+                    }
+
+                    const nameContainer = card.querySelector('[data-framer-name*="Designation"], [data-framer-name*="designation"]');
+                    if (nameContainer) {
+                        const paragraphs = nameContainer.querySelectorAll('p');
+                        if (paragraphs.length >= 2) {
+                            if (paragraphs[0].textContent.trim() !== comment.author) {
+                                paragraphs[0].textContent = comment.author;
+                            }
+                            const likesText = comment.likes + ' likes';
+                            if (paragraphs[1].textContent.trim() !== likesText) {
+                                paragraphs[1].textContent = likesText;
+                            }
+                        } else {
+                            const firstP = nameContainer.querySelector('p');
+                            if (firstP && firstP.textContent.trim() !== comment.author) {
+                                firstP.textContent = comment.author;
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error("Failed to load comments.json", err));
+    }
+
+    function setupAwards() {
+        debugLog('setupAwards() starting...');
+        const awardsSection = document.querySelector('[data-framer-name="Awards Section"]');
+        if (!awardsSection) return;
+
+        if (!document.getElementById('kota-awards-css')) {
+            const style = document.createElement('style');
+            style.id = 'kota-awards-css';
+            style.innerHTML = `
+                .award-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 24px;
+                    text-align: center;
+                    height: 100%;
+                    width: 100%;
+                }
+                .award-icon {
+                    width: 100px;
+                    height: 100px;
+                    object-fit: contain;
+                    margin-bottom: 12px;
+                }
+                .award-title {
+                    font-family: Rajdhani, sans-serif;
+                    font-weight: 700;
+                    color: #fff;
+                    font-size: 26px;
+                    line-height: 1.2;
+                }
+                .award-desc {
+                    font-family: Rajdhani, sans-serif;
+                    color: rgba(255, 255, 255, 0.6);
+                    font-size: 16px;
+                    line-height: 1.4;
+                }
+                .award-meta {
+                    font-family: Rajdhani, sans-serif;
+                    color: #EA0813;
+                    font-weight: 700;
+                    font-size: 16px;
+                    margin-top: 8px;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const awards = awardsSection.querySelectorAll('a[data-framer-name="Variant 1"], a[data-framer-name="Variant 2"]');
+        if (awards.length > 0) {
+            const firstAwardWrap = awards[0].querySelector('[data-framer-name="Wrap"]');
+            if (firstAwardWrap) {
+                firstAwardWrap.innerHTML = `
+                   <div class="award-item">
+                     <img src="assets/silver-playbutton.png" alt="YouTube Silver Play Button" class="award-icon">
+                     <div class="award-title">YouTube Silver Play Button</div>
+                     <div class="award-desc">Awarded for surpassing 100K subscribers</div>
+                     <div class="award-meta">THE KOTA — 653K+ Subscribers</div>
+                   </div>
+                `;
+                awards[0].removeAttribute('href');
+                awards[0].style.cursor = 'default';
             }
-        });
-        debugLog('Rebrand candidates found: ' + cards.length);
-
-        cards.forEach((card, idx) => {
-            let ytId = card._kotaYtId;
-            if (!ytId) {
-                const href = card.getAttribute('href') || '';
-                if (href.includes('x---direct-mobile') || href.includes('1') || href.includes('@TheKota') || href.includes('@TKASYLUM')) {
-                    ytId = '1';
-                } else if (href.includes('helve-website-redesign') || href.includes('2')) {
-                    ytId = '2';
-                } else if (href.includes('ui-ux-agency') || href.includes('3')) {
-                    ytId = '3';
+            
+            // Also ensure any other awards that might have subscriber counts are updated to 653K+
+            awards.forEach(award => {
+                if (award.innerHTML.includes('Subscribers')) {
+                    award.innerHTML = award.innerHTML.replace(/[0-9]+[KMBkmb]?\+?\s+Subscribers/gi, '653K+ Subscribers');
                 }
-            }
-
-            debugLog('Card ' + idx + ' (href: ' + card.getAttribute('href') + ') mapped to ytId: ' + ytId);
-            if (!ytId) return;
-            card._kotaYtId = ytId;
-
-            let videoTitle = '';
-            let videoSubtitle = '';
-            const channelLink = 'https://www.youtube.com/@TheKota';
-            let thumbnailSrc = '';
-
-            if (ytId === '1') {
-                videoTitle = 'කාගේ කවුද මේ !? මගේ නන් නෙමේ !!';
-                videoSubtitle = '650K+ Subscribers';
-                thumbnailSrc = prefix + 'Assets/t1.jpg';
-            } else if (ytId === '2') {
-                videoTitle = 'මෙවැනි කාන්තාවන් වාසනාවන් !!';
-                videoSubtitle = '80M+ Views';
-                thumbnailSrc = prefix + 'Assets/t2.jpg';
-            } else if (ytId === '3') {
-                videoTitle = 'මේක තමා දාන අවසාන වීඩියෝ එක !!';
-                videoSubtitle = 'Try Not To Laugh';
-                thumbnailSrc = prefix + 'Assets/t3.jpg';
-            }
-
-            // Sync href & target reactively
-            if (card.getAttribute('href') !== channelLink) {
-                card.setAttribute('href', channelLink);
-            }
-            if (card.getAttribute('target') !== '_blank') {
-                card.setAttribute('target', '_blank');
-            }
-            if (card.getAttribute('rel') !== 'noopener') {
-                card.setAttribute('rel', 'noopener');
-            }
-
-            // Sync thumbnail image reactively
-            const img = card.querySelector('img');
-            if (img) {
-                if (img.getAttribute('srcset')) {
-                    img.removeAttribute('srcset');
-                }
-                if (img.getAttribute('src') !== thumbnailSrc) {
-                    img.setAttribute('src', thumbnailSrc);
-                }
-            }
-
-            // Sync paragraphs robustly by index
-            const paragraphs = card.querySelectorAll('p');
-            if (paragraphs.length >= 3) {
-                const catP = paragraphs[0];
-                const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">THE KOTA</span></span>';
-                if (!catP.innerHTML.includes('THE KOTA')) {
-                    catP.innerHTML = ytLogo;
-                }
-
-                const titleP = paragraphs[1];
-                if (titleP.textContent.trim() !== videoTitle) {
-                    titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + videoTitle + '</span>';
-                }
-
-                const dateP = paragraphs[2];
-                if (dateP.textContent.trim() !== videoSubtitle) {
-                    dateP.textContent = videoSubtitle;
-                }
-            } else {
-                // Fallback to class selectors
-                const catP = card.querySelector('.framer-oivizu p, [style*="--framer-font-size: 20px"]');
-                if (catP && !catP.innerHTML.includes('THE KOTA')) {
-                    const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">THE KOTA</span></span>';
-                    catP.innerHTML = ytLogo;
-                }
-
-                const titleP = card.querySelector('.framer-wkncrm p, [style*="--framer-font-size: 40px"]');
-                if (titleP && !titleP.textContent.includes(videoTitle)) {
-                    titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + videoTitle + '</span>';
-                }
-
-                const dateP = card.querySelector('.framer-zh8net p');
-                if (dateP && dateP.textContent !== videoSubtitle) {
-                    dateP.textContent = videoSubtitle;
-                }
-            }
-        });
+            });
+        }
     }
 
     function setupCustomScrollReveal() {
@@ -560,117 +609,128 @@
         }, 100);
 
         function initGsapAnimation() {
-            gsap.registerPlugin(ScrollTrigger);
-            
-            const desktopContainer = document.querySelector('.framer-1x4bpdp-container');
-            const mobileContainer = document.querySelector('.framer-p0ih05-container');
-            
-            if (mobileContainer) {
-                // Hide mobile container to prevent duplication
-                mobileContainer.style.setProperty('display', 'none', 'important');
-            }
+            try {
+                gsap.registerPlugin(ScrollTrigger);
+                
+                const desktopContainer = document.querySelector('.framer-1x4bpdp-container');
+                const mobileContainer = document.querySelector('.framer-p0ih05-container');
+                
+                if (mobileContainer) {
+                    mobileContainer.style.setProperty('display', 'none', 'important');
+                }
 
-            if (!desktopContainer) return;
-            
-            const container = desktopContainer;
-            if (container.getAttribute('data-rebuilt') === 'true') return;
-            container.setAttribute('data-rebuilt', 'true');
-            
-            // Force container styles for a compact but massive typography section
-            container.style.setProperty('overflow', 'visible', 'important');
-            container.style.setProperty('width', '100%', 'important');
-            container.style.setProperty('height', 'auto', 'important');
-            container.style.setProperty('padding', '2vh 0', 'important');
-            container.style.setProperty('display', 'flex', 'important');
-            container.style.setProperty('align-items', 'center', 'important');
-            container.style.setProperty('justify-content', 'center', 'important');
-            
-            // Clear existing content
-            container.innerHTML = '';
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'kota-reveal-wrapper';
-            wrapper.style.cssText = 'width: 100%; max-width: 1100px; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.2em 0.4em; text-transform: uppercase; font-family: "Rajdhani", sans-serif; padding: 0 5vw; text-align: center;';
-
-            // Define the typography poster blocks to flow inline
-            const textBlocks = [
-                { text: "Yooow,", color: "transparent", stroke: "2px #EA0813", size: "clamp(50px, 12vw, 150px)", weight: "900", italic: true },
-                { text: "what's up people", color: "#ffffff", stroke: "none", size: "clamp(30px, 6vw, 70px)", weight: "700", italic: false },
-                { text: "it's your", color: "#888888", stroke: "none", size: "clamp(24px, 4vw, 50px)", weight: "500", italic: true },
-                { text: "boy kota", color: "#EA0813", stroke: "none", size: "clamp(60px, 14vw, 180px)", weight: "900", italic: false },
-                { text: "and how you", color: "#ffffff", stroke: "none", size: "clamp(20px, 4vw, 45px)", weight: "600", italic: false, letterSpacing: "2px" },
-                { text: "guys doing.", color: "#ffffff", stroke: "none", size: "clamp(30px, 7vw, 80px)", weight: "900", italic: true }
-            ];
-
-            textBlocks.forEach((block, idx) => {
-                // Split block into individual words to allow flowing wrap and individual animation
-                const words = block.text.split(' ');
-                words.forEach(word => {
-                    const span = document.createElement('span');
-                    span.className = 'kota-gsap-word';
-                    span.textContent = word;
-                    span.style.display = 'inline-block';
-                    span.style.fontSize = block.size;
-                    span.style.fontWeight = block.weight;
-                    span.style.color = block.color;
-                    span.style.lineHeight = '0.9';
-                    span.style.fontStyle = block.italic ? 'italic' : 'normal';
-                    
-                    if (block.stroke !== 'none') {
-                        span.style.webkitTextStroke = block.stroke;
+                if (!desktopContainer) return;
+                
+                const container = desktopContainer;
+                
+                // Hide the original children safely to avoid destroying React nodes
+                for (let child = container.firstChild; child; child = child.nextSibling) {
+                    if (child.nodeType === 1 && !child.classList.contains('kota-reveal-wrapper')) {
+                        child.style.setProperty('display', 'none', 'important');
                     }
-                    if (block.letterSpacing) {
-                        span.style.letterSpacing = block.letterSpacing;
-                    }
-                    
-                    // Initial animation state
-                    span.style.opacity = '0';
-                    span.style.transformOrigin = '50% 100%';
+                }
 
-                    wrapper.appendChild(span);
+                if (container.getAttribute('data-rebuilt') === 'true') return;
+                container.setAttribute('data-rebuilt', 'true');
+                
+                // Force container styles for a compact but massive typography section
+                container.style.setProperty('overflow', 'visible', 'important');
+                container.style.setProperty('width', '100%', 'important');
+                container.style.setProperty('height', 'auto', 'important');
+                container.style.setProperty('padding', '2vh 0', 'important');
+                container.style.setProperty('display', 'flex', 'important');
+                container.style.setProperty('align-items', 'center', 'important');
+                container.style.setProperty('justify-content', 'center', 'important');
+                
+                let wrapper = container.querySelector('.kota-reveal-wrapper');
+                if (!wrapper) {
+                    wrapper = document.createElement('div');
+                    wrapper.className = 'kota-reveal-wrapper';
+                    wrapper.style.cssText = 'width: 100%; max-width: 1100px; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.2em 0.4em; text-transform: uppercase; font-family: "Rajdhani", sans-serif; padding: 0 5vw; text-align: center;';
+
+                    // Define the typography poster blocks to flow inline
+                    const textBlocks = [
+                        { text: "Yooow,", color: "transparent", stroke: "2px #EA0813", size: "clamp(50px, 12vw, 150px)", weight: "900", italic: true },
+                        { text: "what's up people", color: "#ffffff", stroke: "none", size: "clamp(30px, 6vw, 70px)", weight: "700", italic: false },
+                        { text: "it's your", color: "#888888", stroke: "none", size: "clamp(24px, 4vw, 50px)", weight: "500", italic: true },
+                        { text: "boy kota", color: "#EA0813", stroke: "none", size: "clamp(60px, 14vw, 180px)", weight: "900", italic: false },
+                        { text: "and how you", color: "#ffffff", stroke: "none", size: "clamp(20px, 4vw, 45px)", weight: "600", italic: false, letterSpacing: "2px" },
+                        { text: "guys doing.", color: "#ffffff", stroke: "none", size: "clamp(30px, 7vw, 80px)", weight: "900", italic: true }
+                    ];
+
+                    textBlocks.forEach((block, idx) => {
+                        // Split block into individual words to allow flowing wrap and individual animation
+                        const words = block.text.split(' ');
+                        words.forEach(word => {
+                            const span = document.createElement('span');
+                            span.className = 'kota-gsap-word';
+                            span.textContent = word;
+                            span.style.display = 'inline-block';
+                            span.style.fontSize = block.size;
+                            span.style.fontWeight = block.weight;
+                            span.style.color = block.color;
+                            span.style.lineHeight = '0.9';
+                            span.style.fontStyle = block.italic ? 'italic' : 'normal';
+                            
+                            if (block.stroke !== 'none') {
+                                span.style.webkitTextStroke = block.stroke;
+                            }
+                            if (block.letterSpacing) {
+                                span.style.letterSpacing = block.letterSpacing;
+                            }
+                            
+                            // Initial animation state
+                            span.style.opacity = '0';
+                            span.style.transformOrigin = '50% 100%';
+
+                            wrapper.appendChild(span);
+                        });
+                    });
+                    
+                    container.appendChild(wrapper);
+                }
+
+                // Apply modern creative GSAP animation
+                const elements = wrapper.querySelectorAll('.kota-gsap-word');
+                
+                // Create a timeline scrubbed to scroll
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: container,
+                        start: "top 95%",
+                        end: "center 40%",
+                        scrub: 1.5
+                    }
                 });
-            });
-            
-            container.appendChild(wrapper);
-
-            // Apply modern creative GSAP animation
-            const elements = wrapper.querySelectorAll('.kota-gsap-word');
-            
-            // Create a timeline scrubbed to scroll
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: container,
-                    start: "top 95%",
-                    end: "center 40%",
-                    scrub: 1.5
-                }
-            });
-            
-            tl.fromTo(elements, 
-                {
-                    opacity: 0,
-                    y: 100,
-                    z: -100,
-                    rotateX: 60,
-                    rotateY: (index) => (index % 2 === 0 ? 20 : -20),
-                    skewX: (index) => (index % 2 === 0 ? 10 : -10),
-                    scale: 0.3,
-                    filter: "blur(15px)"
-                },
-                {
-                    opacity: 1,
-                    y: 0,
-                    z: 0,
-                    rotateX: 0,
-                    rotateY: 0,
-                    skewX: 0,
-                    scale: 1,
-                    filter: "blur(0px)",
-                    duration: 2,
-                    stagger: 0.5, // Significant stagger so they load one-by-one
-                    ease: "elastic.out(1.2, 0.5)"
-                }
-            );
+                
+                tl.fromTo(elements, 
+                    {
+                        opacity: 0,
+                        y: 100,
+                        z: -100,
+                        rotateX: 60,
+                        rotateY: (index) => (index % 2 === 0 ? 20 : -20),
+                        skewX: (index) => (index % 2 === 0 ? 10 : -10),
+                        scale: 0.3,
+                        filter: "blur(15px)"
+                    },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        z: 0,
+                        rotateX: 0,
+                        rotateY: 0,
+                        skewX: 0,
+                        scale: 1,
+                        filter: "blur(0px)",
+                        duration: 2,
+                        stagger: 0.5, // Significant stagger so they load one-by-one
+                        ease: "elastic.out(1.2, 0.5)"
+                    }
+                );
+            } catch (e) {
+                console.error("GSAP Scroll Reveal initialization failed:", e);
+            }
         }
     }
 
@@ -1074,18 +1134,21 @@
         characterData: true
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function init() {
         applyStyles();
         replaceText(document.body);
-        // Fade out 1.2s after DOM is parsed to cover hydration changes
         setTimeout(triggerFadeOut, 1200);
-    });
-    window.addEventListener('load', () => {
-        applyStyles();
-        replaceText(document.body);
-        // Trigger immediately once fully loaded
-        triggerFadeOut();
-    });
+    }
+
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        init();
+    } else {
+        document.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('load', () => {
+            init();
+            triggerFadeOut();
+        });
+    }
     
     // Periodic synchronization interval as a fail-safe against delayed React hydration
     setInterval(applyStyles, 1000);
@@ -1118,6 +1181,61 @@
     });
 })();
 </script>
+
+<style>
+#kota-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    opacity: 1;
+    visibility: visible;
+}
+#kota-preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none !important;
+}
+#kota-preloader .loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+#kota-preloader .loader-video {
+    width: 160px;
+    height: auto;
+}
+#kota-preloader .loader-bar {
+    width: 160px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+#kota-preloader .loader-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: #EA0813;
+    position: absolute;
+    left: -100%;
+    animation: loading-progress 1.5s infinite ease-in-out;
+}
+@keyframes loading-progress {
+    0% { left: -100%; }
+    50% { left: 0%; }
+    100% { left: 100%; }
+}
+</style>
+
 
 	<meta charset="utf-8">
 	

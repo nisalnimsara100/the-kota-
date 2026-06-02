@@ -4,20 +4,20 @@
     "title": "THE KOTA Meme Reaction 01",
     "channel": "THE KOTA",
     "youtube": "https://www.youtube.com/watch?v=kYxRk2y2ZkE",
-    "thumbnail": "assets/thumb1.jpg"
+    "thumbnail": "Assets/t1.jpg"
   },
   {
     "id": "video2",
     "title": "THE KOTA Meme Reaction 02",
     "channel": "THE KOTA",
     "youtube": "https://www.youtube.com/watch?v=2Vv-BfVoq4g",
-    "thumbnail": "assets/thumb2.jpg"
+    "thumbnail": "Assets/t2.jpg"
   },
   {
     "id": "video3",
     "title": "THE KOTA Meme Reaction 03",
     "channel": "THE KOTA",
     "youtube": "https://www.youtube.com/watch?v=9bZkp7q19f0",
-    "thumbnail": "assets/thumb3.jpg"
+    "thumbnail": "Assets/t3.jpg"
   }
 ]

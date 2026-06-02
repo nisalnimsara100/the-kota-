@@ -98,6 +98,23 @@ htmlFiles.forEach(filePath => {
             styleEl = document.createElement('style');
             styleEl.id = 'kota-social-styles';
             styleEl.innerHTML = \`
+                /* Reorder main container sections visually using CSS Flexbox order */
+                .framer-YnkKJ > .framer-11utm1x-container { order: 1 !important; }
+                .framer-YnkKJ > [data-framer-name="Hero Section"] { order: 2 !important; }
+                .framer-YnkKJ > [data-framer-name="Experience Section"] { order: 3 !important; }
+                .framer-YnkKJ > [data-framer-name="Counter Section"] { order: 4 !important; }
+                .framer-YnkKJ > [data-framer-name="Selected Works"] { order: 5 !important; }
+                .framer-YnkKJ > [data-framer-name="My Services"] { order: 6 !important; }
+                .framer-YnkKJ > [data-framer-name="About Me"] { order: 7 !important; }
+                .framer-YnkKJ > [data-framer-name="Tech Stack"] { order: 8 !important; }
+                .framer-YnkKJ > [data-framer-name="Partner"] { order: 9 !important; }
+                .framer-YnkKJ > [data-framer-name="Testimonials"] { order: 10 !important; }
+                .framer-YnkKJ > [data-framer-name="Awards"] { order: 11 !important; }
+                .framer-YnkKJ > [data-framer-name="Work Process"] { order: 12 !important; }
+                .framer-YnkKJ > [data-framer-name="Pricing Section"] { order: 13 !important; }
+                .framer-YnkKJ > [data-framer-name="FAQ"] { order: 14 !important; }
+                .framer-YnkKJ > [data-framer-name="Contact For work"] { order: 15 !important; }
+
                 [data-framer-name="Social Icons"] a svg,
                 [data-framer-name="Social Icons"] a svg *,
                 .framer-1s5m8nf a svg,
@@ -383,14 +400,7 @@ htmlFiles.forEach(filePath => {
             // ignore
         }
 
-        // Swap sections: Experience Section before Counter Section (so it comes right after Hero Section)
-        const counterSec = document.querySelector('[data-framer-name="Counter Section"]');
-        const expSec = document.querySelector('[data-framer-name="Experience Section"]');
-        if (counterSec && expSec && counterSec.parentElement) {
-            if (counterSec.previousElementSibling !== expSec) {
-                counterSec.parentElement.insertBefore(expSec, counterSec);
-            }
-        }
+        // Swap sections (handled visually via CSS Flexbox order to prevent React hydration conflicts)
 
         // Ensure the Selected Work Ticker text shows the channel name and logo dynamically
         try {
@@ -414,10 +424,9 @@ htmlFiles.forEach(filePath => {
 
     function setupYoutubeCards() {
         debugLog('setupYoutubeCards() starting...');
-        fetch("data/video.json")
+        fetch(prefix + "data/video.json")
             .then(res => res.json())
             .then(videos => {
-                const cards = [];
                 const anchors = document.querySelectorAll('a');
                 anchors.forEach(a => {
                     const href = a.getAttribute('href') || '';
@@ -430,65 +439,72 @@ htmlFiles.forEach(filePath => {
                         href.includes('ui-ux-agency') ||
                         parentName === 'Selected Work' ||
                         name === 'Selected Work' ||
-                        a.getAttribute('name') === 'Selected Work'
+                        a.getAttribute('name') === 'Selected Work' ||
+                        (videos && (href === videos[0].youtube || href === videos[1].youtube || href === videos[2].youtube))
                     ) {
-                        cards.push(a);
-                    }
-                });
-
-                if (cards.length === 0) return;
-
-                const containerMap = new Map();
-                cards.forEach(card => {
-                    const parent = card.parentElement;
-                    if (!containerMap.has(parent)) {
-                        containerMap.set(parent, []);
-                    }
-                    containerMap.get(parent).push(card);
-                });
-
-                containerMap.forEach((containerCards, container) => {
-                    const template = containerCards[0].cloneNode(true);
-                    
-                    containerCards.forEach(c => c.remove());
-
-                    videos.forEach(video => {
-                        const newCard = template.cloneNode(true);
-
-                        newCard.addEventListener("click", (e) => {
-                            e.preventDefault();
-                            window.open(video.youtube, "_blank", "noopener,noreferrer");
-                        });
-
-                        newCard.setAttribute('href', video.youtube);
-                        newCard.setAttribute('target', '_blank');
-                        newCard.setAttribute('rel', 'noopener');
-
-                        const img = newCard.querySelector('img');
-                        if (img) {
-                            if (img.getAttribute('srcset')) img.removeAttribute('srcset');
-                            img.setAttribute('src', video.thumbnail);
+                        let video = null;
+                        if (href.includes('x---direct-mobile') || href === videos[0].youtube) {
+                            video = videos[0];
+                        } else if (href.includes('helve-website-redesign') || href === videos[1].youtube) {
+                            video = videos[1];
+                        } else if (href.includes('ui-ux-agency') || href === videos[2].youtube) {
+                            video = videos[2];
                         }
 
-                        const paragraphs = newCard.querySelectorAll('p');
-                        if (paragraphs.length >= 3) {
-                            const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">' + video.channel + '</span></span>';
-                            paragraphs[0].innerHTML = ytLogo;
-                            paragraphs[1].innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
-                        } else {
-                            const catP = newCard.querySelector('.framer-oivizu p, [style*="--framer-font-size: 20px"]');
-                            if (catP) {
+                        if (video) {
+                            a._kotaYtId = video.id;
+                            
+                            if (a.getAttribute('href') !== video.youtube) {
+                                a.setAttribute('href', video.youtube);
+                            }
+                            a.setAttribute('target', '_blank');
+                            a.setAttribute('rel', 'noopener');
+
+                            if (!a._kotaHasListener) {
+                                a._kotaHasListener = true;
+                                a.addEventListener("click", (e) => {
+                                    e.preventDefault();
+                                    window.open(video.youtube, "_blank", "noopener,noreferrer");
+                                });
+                            }
+
+                            const img = a.querySelector('img');
+                            if (img) {
+                                if (img.getAttribute('srcset')) img.removeAttribute('srcset');
+                                const expectedImg = prefix + video.thumbnail;
+                                if (img.getAttribute('src') !== expectedImg) {
+                                    img.setAttribute('src', expectedImg);
+                                }
+                            }
+
+                            const paragraphs = a.querySelectorAll('p');
+                            if (paragraphs.length >= 3) {
                                 const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">' + video.channel + '</span></span>';
-                                catP.innerHTML = ytLogo;
-                            }
-                            const titleP = newCard.querySelector('.framer-wkncrm p, [style*="--framer-font-size: 40px"]');
-                            if (titleP) {
-                                titleP.innerHTML = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
+                                if (paragraphs[0].innerHTML !== ytLogo) {
+                                    paragraphs[0].innerHTML = ytLogo;
+                                }
+                                const ytTitle = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
+                                if (paragraphs[1].innerHTML !== ytTitle) {
+                                    paragraphs[1].innerHTML = ytTitle;
+                                }
+                            } else {
+                                const catP = a.querySelector('.framer-oivizu p, [style*="--framer-font-size: 20px"]');
+                                if (catP) {
+                                    const ytLogo = '<span style="display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #EA0813; flex-shrink: 0; display: inline-block; vertical-align: middle;"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span style="font-family: Rajdhani, sans-serif; font-weight: 600; color: #fff; vertical-align: middle;">' + video.channel + '</span></span>';
+                                    if (catP.innerHTML !== ytLogo) {
+                                        catP.innerHTML = ytLogo;
+                                    }
+                                }
+                                const titleP = a.querySelector('.framer-wkncrm p, [style*="--framer-font-size: 40px"]');
+                                if (titleP) {
+                                    const ytTitle = '<span style="font-family: Rajdhani, sans-serif; font-weight: 700; color: #fff; line-height: 1.2; display: block;">' + video.title + '</span>';
+                                    if (titleP.innerHTML !== ytTitle) {
+                                        titleP.innerHTML = ytTitle;
+                                    }
+                                }
                             }
                         }
-                        
-                        container.appendChild(newCard);
-                    });
+                    }
                 });
             })
             .catch(err => console.error("Failed to load video.json", err));
@@ -496,47 +512,46 @@ htmlFiles.forEach(filePath => {
 
     function setupTestimonials() {
         debugLog('setupTestimonials() starting...');
-        fetch("data/comments.json")
+        fetch(prefix + "data/comments.json")
             .then(res => res.json())
             .then(comments => {
+                if (!Array.isArray(comments) || comments.length === 0) return;
                 const testimonialCards = document.querySelectorAll('div[data-framer-name="Testimonial Person Card"]');
                 if (testimonialCards.length === 0) return;
                 
-                const listItems = Array.from(testimonialCards).map(card => card.closest('li')).filter(Boolean);
-                if (listItems.length === 0) return;
-                
-                const ul = listItems[0].parentElement;
-                if (!ul) return;
+                testimonialCards.forEach((card, idx) => {
+                    const comment = comments[idx % comments.length];
+                    if (!comment) return;
 
-                const template = listItems[0].cloneNode(true);
-                
-                listItems.forEach(li => li.remove());
-
-                comments.forEach(comment => {
-                    const newLi = template.cloneNode(true);
-                    
-                    const reviewRichText = newLi.querySelector('div[data-framer-name="Testimonial Person Card"]').previousElementSibling;
-                    if (reviewRichText) {
-                        const reviewP = reviewRichText.querySelector('p');
-                        if (reviewP) {
-                            reviewP.innerHTML = '" ' + comment.text + ' "';
+                    const reviewContainer = card.previousElementSibling;
+                    if (reviewContainer) {
+                        const p = reviewContainer.querySelector('p');
+                        if (p) {
+                            const expectedText = '“ ' + comment.text + ' ”';
+                            if (p.textContent.trim() !== expectedText) {
+                                p.textContent = expectedText;
+                            }
                         }
                     }
 
-                    const nameContainer = newLi.querySelector('div[data-framer-name="Name & Designation"]');
+                    const nameContainer = card.querySelector('[data-framer-name*="Designation"], [data-framer-name*="designation"]');
                     if (nameContainer) {
-                        const nameP = nameContainer.firstElementChild.querySelector('p');
-                        if (nameP) {
-                            nameP.textContent = comment.author;
-                        }
-                        
-                        const designationP = nameContainer.lastElementChild.querySelector('p');
-                        if (designationP) {
-                            designationP.textContent = comment.likes + ' likes';
+                        const paragraphs = nameContainer.querySelectorAll('p');
+                        if (paragraphs.length >= 2) {
+                            if (paragraphs[0].textContent.trim() !== comment.author) {
+                                paragraphs[0].textContent = comment.author;
+                            }
+                            const likesText = comment.likes + ' likes';
+                            if (paragraphs[1].textContent.trim() !== likesText) {
+                                paragraphs[1].textContent = likesText;
+                            }
+                        } else {
+                            const firstP = nameContainer.querySelector('p');
+                            if (firstP && firstP.textContent.trim() !== comment.author) {
+                                firstP.textContent = comment.author;
+                            }
                         }
                     }
-                    
-                    ul.appendChild(newLi);
                 });
             })
             .catch(err => console.error("Failed to load comments.json", err));
@@ -550,45 +565,45 @@ htmlFiles.forEach(filePath => {
         if (!document.getElementById('kota-awards-css')) {
             const style = document.createElement('style');
             style.id = 'kota-awards-css';
-            style.innerHTML = `
-        .award - item {
-            display: flex;
-    flex - direction: column;
-    align - items: center;
-    justify - content: center;
-    gap: 8px;
-    padding: 24px;
-    text - align: center;
-    height: 100 %;
-    width: 100 %;
-}
-                .award - icon {
-    width: 100px;
-    height: 100px;
-    object- fit: contain;
-margin - bottom: 12px;
+            style.innerHTML = \`
+                .award-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 24px;
+                    text-align: center;
+                    height: 100%;
+                    width: 100%;
                 }
-                .award - title {
-    font - family: Rajdhani, sans - serif;
-    font - weight: 700;
-    color: #fff;
-    font - size: 26px;
-    line - height: 1.2;
-}
-                .award - desc {
-    font - family: Rajdhani, sans - serif;
-    color: rgba(255, 255, 255, 0.6);
-    font - size: 16px;
-    line - height: 1.4;
-}
-                .award - meta {
-    font - family: Rajdhani, sans - serif;
-    color: #EA0813;
-    font - weight: 700;
-    font - size: 16px;
-    margin - top: 8px;
-}
-`;
+                .award-icon {
+                    width: 100px;
+                    height: 100px;
+                    object-fit: contain;
+                    margin-bottom: 12px;
+                }
+                .award-title {
+                    font-family: Rajdhani, sans-serif;
+                    font-weight: 700;
+                    color: #fff;
+                    font-size: 26px;
+                    line-height: 1.2;
+                }
+                .award-desc {
+                    font-family: Rajdhani, sans-serif;
+                    color: rgba(255, 255, 255, 0.6);
+                    font-size: 16px;
+                    line-height: 1.4;
+                }
+                .award-meta {
+                    font-family: Rajdhani, sans-serif;
+                    color: #EA0813;
+                    font-weight: 700;
+                    font-size: 16px;
+                    margin-top: 8px;
+                }
+            \`;
             document.head.appendChild(style);
         }
 
@@ -626,117 +641,128 @@ margin - bottom: 12px;
         }, 100);
 
         function initGsapAnimation() {
-            gsap.registerPlugin(ScrollTrigger);
-            
-            const desktopContainer = document.querySelector('.framer-1x4bpdp-container');
-            const mobileContainer = document.querySelector('.framer-p0ih05-container');
-            
-            if (mobileContainer) {
-                // Hide mobile container to prevent duplication
-                mobileContainer.style.setProperty('display', 'none', 'important');
-            }
+            try {
+                gsap.registerPlugin(ScrollTrigger);
+                
+                const desktopContainer = document.querySelector('.framer-1x4bpdp-container');
+                const mobileContainer = document.querySelector('.framer-p0ih05-container');
+                
+                if (mobileContainer) {
+                    mobileContainer.style.setProperty('display', 'none', 'important');
+                }
 
-            if (!desktopContainer) return;
-            
-            const container = desktopContainer;
-            if (container.getAttribute('data-rebuilt') === 'true') return;
-            container.setAttribute('data-rebuilt', 'true');
-            
-            // Force container styles for a compact but massive typography section
-            container.style.setProperty('overflow', 'visible', 'important');
-            container.style.setProperty('width', '100%', 'important');
-            container.style.setProperty('height', 'auto', 'important');
-            container.style.setProperty('padding', '2vh 0', 'important');
-            container.style.setProperty('display', 'flex', 'important');
-            container.style.setProperty('align-items', 'center', 'important');
-            container.style.setProperty('justify-content', 'center', 'important');
-            
-            // Clear existing content
-            container.innerHTML = '';
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'kota-reveal-wrapper';
-            wrapper.style.cssText = 'width: 100%; max-width: 1100px; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.2em 0.4em; text-transform: uppercase; font-family: "Rajdhani", sans-serif; padding: 0 5vw; text-align: center;';
-
-            // Define the typography poster blocks to flow inline
-            const textBlocks = [
-                { text: "Yooow,", color: "transparent", stroke: "2px #EA0813", size: "clamp(50px, 12vw, 150px)", weight: "900", italic: true },
-                { text: "what's up people", color: "#ffffff", stroke: "none", size: "clamp(30px, 6vw, 70px)", weight: "700", italic: false },
-                { text: "it's your", color: "#888888", stroke: "none", size: "clamp(24px, 4vw, 50px)", weight: "500", italic: true },
-                { text: "boy kota", color: "#EA0813", stroke: "none", size: "clamp(60px, 14vw, 180px)", weight: "900", italic: false },
-                { text: "and how you", color: "#ffffff", stroke: "none", size: "clamp(20px, 4vw, 45px)", weight: "600", italic: false, letterSpacing: "2px" },
-                { text: "guys doing.", color: "#ffffff", stroke: "none", size: "clamp(30px, 7vw, 80px)", weight: "900", italic: true }
-            ];
-
-            textBlocks.forEach((block, idx) => {
-                // Split block into individual words to allow flowing wrap and individual animation
-                const words = block.text.split(' ');
-                words.forEach(word => {
-                    const span = document.createElement('span');
-                    span.className = 'kota-gsap-word';
-                    span.textContent = word;
-                    span.style.display = 'inline-block';
-                    span.style.fontSize = block.size;
-                    span.style.fontWeight = block.weight;
-                    span.style.color = block.color;
-                    span.style.lineHeight = '0.9';
-                    span.style.fontStyle = block.italic ? 'italic' : 'normal';
-                    
-                    if (block.stroke !== 'none') {
-                        span.style.webkitTextStroke = block.stroke;
+                if (!desktopContainer) return;
+                
+                const container = desktopContainer;
+                
+                // Hide the original children safely to avoid destroying React nodes
+                for (let child = container.firstChild; child; child = child.nextSibling) {
+                    if (child.nodeType === 1 && !child.classList.contains('kota-reveal-wrapper')) {
+                        child.style.setProperty('display', 'none', 'important');
                     }
-                    if (block.letterSpacing) {
-                        span.style.letterSpacing = block.letterSpacing;
-                    }
-                    
-                    // Initial animation state
-                    span.style.opacity = '0';
-                    span.style.transformOrigin = '50% 100%';
+                }
 
-                    wrapper.appendChild(span);
+                if (container.getAttribute('data-rebuilt') === 'true') return;
+                container.setAttribute('data-rebuilt', 'true');
+                
+                // Force container styles for a compact but massive typography section
+                container.style.setProperty('overflow', 'visible', 'important');
+                container.style.setProperty('width', '100%', 'important');
+                container.style.setProperty('height', 'auto', 'important');
+                container.style.setProperty('padding', '2vh 0', 'important');
+                container.style.setProperty('display', 'flex', 'important');
+                container.style.setProperty('align-items', 'center', 'important');
+                container.style.setProperty('justify-content', 'center', 'important');
+                
+                let wrapper = container.querySelector('.kota-reveal-wrapper');
+                if (!wrapper) {
+                    wrapper = document.createElement('div');
+                    wrapper.className = 'kota-reveal-wrapper';
+                    wrapper.style.cssText = 'width: 100%; max-width: 1100px; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.2em 0.4em; text-transform: uppercase; font-family: "Rajdhani", sans-serif; padding: 0 5vw; text-align: center;';
+
+                    // Define the typography poster blocks to flow inline
+                    const textBlocks = [
+                        { text: "Yooow,", color: "transparent", stroke: "2px #EA0813", size: "clamp(50px, 12vw, 150px)", weight: "900", italic: true },
+                        { text: "what's up people", color: "#ffffff", stroke: "none", size: "clamp(30px, 6vw, 70px)", weight: "700", italic: false },
+                        { text: "it's your", color: "#888888", stroke: "none", size: "clamp(24px, 4vw, 50px)", weight: "500", italic: true },
+                        { text: "boy kota", color: "#EA0813", stroke: "none", size: "clamp(60px, 14vw, 180px)", weight: "900", italic: false },
+                        { text: "and how you", color: "#ffffff", stroke: "none", size: "clamp(20px, 4vw, 45px)", weight: "600", italic: false, letterSpacing: "2px" },
+                        { text: "guys doing.", color: "#ffffff", stroke: "none", size: "clamp(30px, 7vw, 80px)", weight: "900", italic: true }
+                    ];
+
+                    textBlocks.forEach((block, idx) => {
+                        // Split block into individual words to allow flowing wrap and individual animation
+                        const words = block.text.split(' ');
+                        words.forEach(word => {
+                            const span = document.createElement('span');
+                            span.className = 'kota-gsap-word';
+                            span.textContent = word;
+                            span.style.display = 'inline-block';
+                            span.style.fontSize = block.size;
+                            span.style.fontWeight = block.weight;
+                            span.style.color = block.color;
+                            span.style.lineHeight = '0.9';
+                            span.style.fontStyle = block.italic ? 'italic' : 'normal';
+                            
+                            if (block.stroke !== 'none') {
+                                span.style.webkitTextStroke = block.stroke;
+                            }
+                            if (block.letterSpacing) {
+                                span.style.letterSpacing = block.letterSpacing;
+                            }
+                            
+                            // Initial animation state
+                            span.style.opacity = '0';
+                            span.style.transformOrigin = '50% 100%';
+
+                            wrapper.appendChild(span);
+                        });
+                    });
+                    
+                    container.appendChild(wrapper);
+                }
+
+                // Apply modern creative GSAP animation
+                const elements = wrapper.querySelectorAll('.kota-gsap-word');
+                
+                // Create a timeline scrubbed to scroll
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: container,
+                        start: "top 95%",
+                        end: "center 40%",
+                        scrub: 1.5
+                    }
                 });
-            });
-            
-            container.appendChild(wrapper);
-
-            // Apply modern creative GSAP animation
-            const elements = wrapper.querySelectorAll('.kota-gsap-word');
-            
-            // Create a timeline scrubbed to scroll
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: container,
-                    start: "top 95%",
-                    end: "center 40%",
-                    scrub: 1.5
-                }
-            });
-            
-            tl.fromTo(elements, 
-                {
-                    opacity: 0,
-                    y: 100,
-                    z: -100,
-                    rotateX: 60,
-                    rotateY: (index) => (index % 2 === 0 ? 20 : -20),
-                    skewX: (index) => (index % 2 === 0 ? 10 : -10),
-                    scale: 0.3,
-                    filter: "blur(15px)"
-                },
-                {
-                    opacity: 1,
-                    y: 0,
-                    z: 0,
-                    rotateX: 0,
-                    rotateY: 0,
-                    skewX: 0,
-                    scale: 1,
-                    filter: "blur(0px)",
-                    duration: 2,
-                    stagger: 0.5, // Significant stagger so they load one-by-one
-                    ease: "elastic.out(1.2, 0.5)"
-                }
-            );
+                
+                tl.fromTo(elements, 
+                    {
+                        opacity: 0,
+                        y: 100,
+                        z: -100,
+                        rotateX: 60,
+                        rotateY: (index) => (index % 2 === 0 ? 20 : -20),
+                        skewX: (index) => (index % 2 === 0 ? 10 : -10),
+                        scale: 0.3,
+                        filter: "blur(15px)"
+                    },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        z: 0,
+                        rotateX: 0,
+                        rotateY: 0,
+                        skewX: 0,
+                        scale: 1,
+                        filter: "blur(0px)",
+                        duration: 2,
+                        stagger: 0.5, // Significant stagger so they load one-by-one
+                        ease: "elastic.out(1.2, 0.5)"
+                    }
+                );
+            } catch (e) {
+                console.error("GSAP Scroll Reveal initialization failed:", e);
+            }
         }
     }
 
@@ -1140,18 +1166,21 @@ margin - bottom: 12px;
         characterData: true
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function init() {
         applyStyles();
         replaceText(document.body);
-        // Fade out 1.2s after DOM is parsed to cover hydration changes
         setTimeout(triggerFadeOut, 1200);
-    });
-    window.addEventListener('load', () => {
-        applyStyles();
-        replaceText(document.body);
-        // Trigger immediately once fully loaded
-        triggerFadeOut();
-    });
+    }
+
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        init();
+    } else {
+        document.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('load', () => {
+            init();
+            triggerFadeOut();
+        });
+    }
     
     // Periodic synchronization interval as a fail-safe against delayed React hydration
     setInterval(applyStyles, 1000);
@@ -1256,7 +1285,7 @@ const original = content;
 content = content.replace(/\r\n/g, '\n');
 
 // 1. Insert/Replace inline script tag robustly
-const scriptRegex = /<script>\s*\(function\(\)\s*\{[\s\S]*?<\/script>/i;
+const scriptRegex = /<script>\s*\(\s*function\s*\(\)\s*\{[\s\S]*?<\/script>/i;
 if (content.match(scriptRegex)) {
     content = content.replace(scriptRegex, inlineScript);
 } else {
