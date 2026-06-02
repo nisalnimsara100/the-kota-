@@ -2,31 +2,28 @@
   "section_title": "My Pricing",
   "plans": {
     "standard": {
-      "title": "Standard Plan",
+      "title": "Chooty Member",
       "description": "Have design ready to build? Or small budget?",
-      "price": "$49",
+      "price": "Rs 500",
       "price_suffix": " / hour",
       "features": [
-        "Need your wireframe",
-        "Design with Figma, Framer",
-        "Implement with Webflow, React, WordPress, Laravel/PHP",
-        "Remote/Online",
-        "Work in business days, no weekend."
+        "Special loyalty badges next to your name in comments",
+        "Access to unique Kota-themed emojis for live chats.",
+        "Memes posted by Standard members on r/TKASYLUM get reviewed first"
       ],
       "button_text": "Subscribe Now",
       "button_url": "https://www.youtube.com/@TheKota"
     },
     "premium": {
-      "title": "Premium Plan",
+      "title": "Asylum Boss",
       "description": "Full design and development from scratch.",
-      "price": "$99",
+      "price": "Rs 1000",
       "price_suffix": " / hour",
       "features": [
-        "Wireframing & Prototyping",
-        "Premium UI/UX Design",
-        "Interactive Animations",
-        "Development & SEO Optimization",
-        "Priority Support & Weekly Syncs"
+        "Access to uncut, raw reaction footage or exclusive ",
+        "A private, VIP role and chat room inside official Discord server.",
+        "Your name listed in the credits or read out loud at the end of his reaction videos.",
+        "Monthly, members-only live streams to chat directly with him."
       ],
       "button_text": "Subscribe Now",
       "button_url": "https://www.youtube.com/@TheKota"

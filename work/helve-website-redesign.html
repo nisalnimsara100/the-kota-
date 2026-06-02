@@ -391,9 +391,97 @@
         setupAboutSection();
         setupBrandsSection();
         setupPricingSection();
+        setupSidebarScrollSpy();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
+    }
+
+    function setupSidebarScrollSpy() {
+        const sidebarLinks = document.querySelectorAll('.framer-8vx74n');
+        if (!sidebarLinks.length) return;
+
+        const sectionMap = {
+            'Home': 'home',
+            'works': 'work',
+            'Services': 'service',
+            'About': 'about',
+            'Testimonial': 'testimonial',
+            'Pricing': 'pricing',
+            'FAQ': 'faq',
+            'Contact': 'contact'
+        };
+
+        if (!document.getElementById('kota-sidebar-css')) {
+            const style = document.createElement('style');
+            style.id = 'kota-sidebar-css';
+            style.innerHTML = `
+                [data-framer-name="Side Bar"] > div:not([data-framer-name]) {
+                    display: none !important;
+                }
+                .kota-sidebar-active {
+                    position: relative !important;
+                }
+                .kota-sidebar-active::before {
+                    content: '';
+                    position: absolute;
+                    left: -32px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 8px;
+                    height: 8px;
+                    background-color: white;
+                    border-radius: 50%;
+                    box-shadow: 0 0 10px 2px rgba(234, 8, 19, 0.7);
+                    z-index: 100;
+                    transition: top 0.3s ease, left 0.3s ease;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const sections = [];
+        sidebarLinks.forEach(link => {
+            const name = link.getAttribute('data-framer-name');
+            if (name && sectionMap[name]) {
+                const sectionEl = document.getElementById(sectionMap[name]);
+                if (sectionEl) {
+                    sections.push({ link, sectionEl, id: sectionMap[name] });
+                }
+            }
+            
+            link.addEventListener('click', (e) => {
+                if (name && sectionMap[name]) {
+                    const targetEl = document.getElementById(sectionMap[name]);
+                    if (targetEl) {
+                        e.preventDefault();
+                        targetEl.scrollIntoView({ behavior: 'smooth' });
+                        history.replaceState(null, null, '#' + sectionMap[name]);
+                    }
+                }
+            });
+        });
+
+        function onScroll() {
+            let currentSection = null;
+            const scrollPos = window.scrollY + window.innerHeight / 2.5;
+
+            sections.forEach(({ link, sectionEl }) => {
+                const top = sectionEl.offsetTop;
+                const height = sectionEl.offsetHeight;
+                if (scrollPos >= top && scrollPos < top + height) {
+                    currentSection = link;
+                }
+            });
+
+            if (currentSection) {
+                sidebarLinks.forEach(l => l.classList.remove('kota-sidebar-active'));
+                currentSection.classList.add('kota-sidebar-active');
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        setTimeout(onScroll, 500);
     }
 
     function setupYoutubeCards() {
