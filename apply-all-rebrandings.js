@@ -83,6 +83,9 @@ htmlFiles.forEach(filePath => {
 
     let counterOneStarted = false;
     let counterTwoStarted = false;
+    let aboutDataCached = null;
+    let brandsDataCached = null;
+    let pricingDataCached = null;
 
     function applyStyles() {
         debugLog('applyStyles() running...');
@@ -417,6 +420,9 @@ htmlFiles.forEach(filePath => {
         setupYoutubeCards();
         setupTestimonials();
         setupAwards();
+        setupAboutSection();
+        setupBrandsSection();
+        setupPricingSection();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
@@ -555,6 +561,240 @@ htmlFiles.forEach(filePath => {
                 });
             })
             .catch(err => console.error("Failed to load comments.json", err));
+    }
+
+    function setupAboutSection() {
+        if (aboutDataCached) {
+            applyAboutData(aboutDataCached);
+            return;
+        }
+        fetch(prefix + "data/about.json")
+            .then(res => res.json())
+            .then(data => {
+                aboutDataCached = data;
+                applyAboutData(data);
+            })
+            .catch(err => console.error("Failed to load about.json", err));
+    }
+
+    function applyAboutData(data) {
+        if (!data) return;
+        
+        const paragraphs = document.querySelectorAll('[data-framer-name="About Me Section"] p');
+        paragraphs.forEach(p => {
+            const text = p.textContent || '';
+            if (
+                text.includes("Behind every great") || 
+                text.includes("even greater story") || 
+                (data.title && text.includes(data.title.substring(0, 15)))
+            ) {
+                if (p.textContent !== data.title) {
+                    p.textContent = data.title;
+                    p.style.fontFamily = '"Rajdhani", sans-serif';
+                    p.innerHTML = data.title;
+                }
+            } else if (
+                text.includes("meaning and purpose") || 
+                text.includes("story is paramount") || 
+                text.includes("THE KOTA") || 
+                text.includes("ChootyGang") ||
+                (text.includes("San Francisco") && text.includes("designer"))
+            ) {
+                if (p.textContent !== data.bio) {
+                    p.textContent = data.bio;
+                    p.style.fontFamily = '"Rajdhani", sans-serif';
+                    p.style.color = 'rgba(255, 255, 255, 0.6)';
+                }
+            }
+        });
+        
+        if (Array.isArray(data.sliding_images)) {
+            const imageContainers = document.querySelectorAll('[data-framer-name^="About Image"]');
+            imageContainers.forEach(container => {
+                const img = container.querySelector('img');
+                if (img) {
+                    const name = container.getAttribute('data-framer-name') || '';
+                    let idx = -1;
+                    if (name.includes('One')) idx = 0;
+                    else if (name.includes('Two')) idx = 1;
+                    else if (name.includes('Three')) idx = 2;
+                    else if (name.includes('Four')) idx = 3;
+                    
+                    if (idx !== -1 && data.sliding_images[idx]) {
+                        let imgUrl = data.sliding_images[idx];
+                        if (!imgUrl.startsWith('http') && !imgUrl.startsWith('data:')) {
+                            imgUrl = prefix + imgUrl;
+                        }
+                        if (img.getAttribute('srcset')) img.removeAttribute('srcset');
+                        if (img.getAttribute('src') !== imgUrl) {
+                            img.setAttribute('src', imgUrl);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function setupBrandsSection() {
+        if (brandsDataCached) {
+            applyBrandsData(brandsDataCached);
+            return;
+        }
+        fetch(prefix + "data/brands.json")
+            .then(res => res.json())
+            .then(data => {
+                brandsDataCached = data;
+                applyBrandsData(data);
+            })
+            .catch(err => console.error("Failed to load brands.json", err));
+    }
+
+    function applyBrandsData(data) {
+        if (!data) return;
+        
+        const partnerSection = document.querySelector('[data-framer-name="Partner"]');
+        if (partnerSection) {
+            const titleP = partnerSection.querySelector('[data-framer-name="Service"] p');
+            if (titleP && data.title && titleP.textContent.trim() !== data.title) {
+                titleP.textContent = data.title;
+            }
+        }
+        
+        if (Array.isArray(data.logos)) {
+            const logoContainers = document.querySelectorAll('[data-framer-name^="Client Logo"]');
+            logoContainers.forEach(container => {
+                const img = container.querySelector('img');
+                if (img) {
+                    const name = container.getAttribute('data-framer-name') || '';
+                    let idx = -1;
+                    if (name.includes('One')) idx = 0;
+                    else if (name.includes('Two')) idx = 1;
+                    else if (name.includes('Three')) idx = 2;
+                    else if (name.includes('Four')) idx = 3;
+                    else if (name.includes('Five')) idx = 4;
+                    
+                    if (idx !== -1 && data.logos[idx]) {
+                        let imgUrl = data.logos[idx];
+                        if (!imgUrl.startsWith('http') && !imgUrl.startsWith('data:')) {
+                            imgUrl = prefix + imgUrl;
+                        }
+                        if (img.getAttribute('srcset')) img.removeAttribute('srcset');
+                        if (img.getAttribute('src') !== imgUrl) {
+                            img.setAttribute('src', imgUrl);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function setupPricingSection() {
+        if (pricingDataCached) {
+            applyPricingData(pricingDataCached);
+            return;
+        }
+        fetch(prefix + "data/pricing.json")
+            .then(res => res.json())
+            .then(data => {
+                pricingDataCached = data;
+                applyPricingData(data);
+            })
+            .catch(err => console.error("Failed to load pricing.json", err));
+    }
+
+    function applyPricingData(data) {
+        if (!data) return;
+
+        const pricingSection = document.querySelector('[data-framer-name="Pricing Section"]');
+        if (pricingSection) {
+            const sectionTitleP = pricingSection.querySelector('.framer-6dslhd h1');
+            if (sectionTitleP && data.section_title && sectionTitleP.textContent.trim() !== data.section_title) {
+                sectionTitleP.textContent = data.section_title;
+            }
+        }
+
+        const planTitleEl = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Plan Title"]');
+        if (!planTitleEl) return;
+
+        const currentPlanText = planTitleEl.textContent || '';
+        let activePlanKey = 'standard';
+        if (currentPlanText.includes('Premium')) {
+            activePlanKey = 'premium';
+        }
+
+        const activePlan = data.plans[activePlanKey];
+        if (!activePlan) return;
+
+        const planTitlePs = planTitleEl.querySelectorAll('p');
+        planTitlePs.forEach(p => {
+            if (p.textContent.trim() !== activePlan.title) {
+                p.textContent = activePlan.title;
+            }
+        });
+
+        const descContainer = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Standard Plan & Text"] > [data-framer-component-type="RichTextContainer"]:last-child');
+        if (descContainer) {
+            const descP = descContainer.querySelector('p');
+            if (descP && descP.textContent.trim() !== activePlan.description) {
+                descP.textContent = activePlan.description;
+            }
+        }
+
+        const priceContainer = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Price"]');
+        if (priceContainer) {
+            const priceHeaders = priceContainer.querySelectorAll('h1');
+            priceHeaders.forEach(h1 => {
+                if (h1.textContent.trim() !== activePlan.price) {
+                    h1.textContent = activePlan.price;
+                }
+            });
+            
+            const suffixP = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Price Hours"] p');
+            if (suffixP && suffixP.textContent.trim() !== activePlan.price_suffix.trim()) {
+                suffixP.innerHTML = '&nbsp;' + activePlan.price_suffix.trim();
+            }
+        }
+
+        if (Array.isArray(activePlan.features)) {
+            const pricingCard = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Pricing"]');
+            if (pricingCard) {
+                const pointContainers = pricingCard.querySelectorAll('[data-framer-name^="Point "]');
+                pointContainers.forEach(container => {
+                    const name = container.getAttribute('data-framer-name') || '';
+                    let idx = -1;
+                    const match = name.match(/Point\s+(\d+)/i);
+                    if (match) {
+                        idx = parseInt(match[1], 10) - 1;
+                    }
+                    
+                    if (idx !== -1) {
+                        const p = container.querySelector('p');
+                        if (p) {
+                            const featureText = activePlan.features[idx];
+                            if (featureText) {
+                                container.style.removeProperty('display');
+                                if (p.textContent.trim() !== featureText) {
+                                    p.textContent = featureText;
+                                }
+                            } else {
+                                container.style.setProperty('display', 'none', 'important');
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        const button = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Pricing"] a[data-framer-name="Light Variant"]');
+        if (button) {
+            if (activePlan.button_url && button.getAttribute('href') !== activePlan.button_url) {
+                button.setAttribute('href', activePlan.button_url);
+            }
+            const btnP = button.querySelector('p');
+            if (btnP && activePlan.button_text && btnP.textContent.trim() !== activePlan.button_text) {
+                btnP.textContent = activePlan.button_text;
+            }
+        }
     }
 
     function setupAwards() {

@@ -1,0 +1,35 @@
+{
+  "section_title": "My Pricing",
+  "plans": {
+    "standard": {
+      "title": "Standard Plan",
+      "description": "Have design ready to build? Or small budget?",
+      "price": "$49",
+      "price_suffix": " / hour",
+      "features": [
+        "Need your wireframe",
+        "Design with Figma, Framer",
+        "Implement with Webflow, React, WordPress, Laravel/PHP",
+        "Remote/Online",
+        "Work in business days, no weekend."
+      ],
+      "button_text": "Subscribe Now",
+      "button_url": "https://www.youtube.com/@TheKota"
+    },
+    "premium": {
+      "title": "Premium Plan",
+      "description": "Full design and development from scratch.",
+      "price": "$99",
+      "price_suffix": " / hour",
+      "features": [
+        "Wireframing & Prototyping",
+        "Premium UI/UX Design",
+        "Interactive Animations",
+        "Development & SEO Optimization",
+        "Priority Support & Weekly Syncs"
+      ],
+      "button_text": "Subscribe Now",
+      "button_url": "https://www.youtube.com/@TheKota"
+    }
+  }
+}
