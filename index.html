@@ -87,6 +87,38 @@
                 .framer-YnkKJ > [data-framer-name="FAQ"] { order: 14 !important; }
                 .framer-YnkKJ > [data-framer-name="Contact For work"] { order: 15 !important; }
 
+                /* Reduce Testimonial Person Card height and image stretching to form a square crop frame */
+                .framer-1svhg64,
+                [data-framer-name="Testimonial Person Card"] {
+                    width: 240px !important;
+                    height: 240px !important;
+                    padding: 120px 15px 15px 15px !important; /* Shrunk padding-top to prevent text cut-off */
+                }
+                /* Reduce overall testimonial card wrapper & slideshow heights */
+                .framer-zbal2t-container,
+                .framer-15bhg5v-container {
+                    height: 400px !important; /* Set to 400px to ensure absolutely no clipping */
+                }
+                /* Reduce the vertical flex gap inside slides and force full height alignment */
+                .framer-A1C3j.framer-1ov1c89,
+                [data-framer-name="Variant 1"] {
+                    gap: 15px !important;
+                    height: 100% !important;
+                    justify-content: flex-end !important;
+                }
+                /* Move Testimonial slide controls to the bottom-left to avoid overlap with long quote texts */
+                [data-framer-name="Testimonials"] fieldset > div,
+                #testimonial fieldset > div,
+                [data-framer-name="Testimonials"] .framer-slideshow-controls > div,
+                #testimonial .framer-slideshow-controls > div {
+                    top: auto !important;
+                    bottom: 30px !important;
+                    left: 30px !important;
+                    right: auto !important;
+                    z-index: 99 !important;
+                    pointer-events: auto !important;
+                }
+
                 [data-framer-name="Social Icons"] a svg,
                 [data-framer-name="Social Icons"] a svg *,
                 .framer-1s5m8nf a svg,
@@ -135,13 +167,21 @@
                 [data-framer-name="Social Icons"] [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
                     display: none !important;
                 }
-                /* Remove the thin 'More Info' bar under the counters */
+                /* Remove the thin 'More Info' bar under the counters and other unwanted sections */
                 [data-framer-name="More Info"],
                 [data-framer-name="Customers"],
                 [data-framer-name="Global"],
                 [data-framer-name="FAQ"],
                 [data-framer-name="Work Process"],
                 [data-framer-name="Tech Stack"],
+                [data-framer-name="Awards Section"],
+                [data-framer-name="Awards"],
+                [data-framer-name="Pricing Section"],
+                [data-framer-name="My Pricing"],
+                #pricing,
+                a[data-framer-name="Pricing"],
+                .framer-1flij53,
+                [data-framer-name="Select your Budget"],
                 [data-framer-name="My Services"] {
                     display: none !important;
                 }
@@ -591,6 +631,12 @@
 
     function setupTestimonials() {
         debugLog('setupTestimonials() starting...');
+        
+        const testimonialSection = document.getElementById('testimonial') || document.querySelector('[data-framer-name="Testimonials"]');
+        if (testimonialSection && testimonialSection.id !== 'testimonial') {
+            testimonialSection.id = 'testimonial';
+        }
+        
         fetch(prefix + "data/comments.json?v=" + Date.now())
             .then(res => res.json())
             .then(comments => {
@@ -857,6 +903,14 @@
                 }
                 [data-framer-name="Price"] {
                     overflow: visible !important;
+                    width: max-content !important;
+                }
+                [data-framer-name="Price/Hour"] {
+                    overflow: visible !important;
+                    flex-wrap: wrap !important;
+                    gap: 4px !important;
+                    height: auto !important;
+                    align-items: baseline !important;
                 }
             `;
             document.head.appendChild(style);
@@ -1553,6 +1607,28 @@
                     } else if (src.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY')) {
                         node.setAttribute('src', prefix + 'Assets/Kota Text.png');
                         node.removeAttribute('srcset');
+                    } else if (typeof aboutDataCached !== 'undefined' && aboutDataCached && Array.isArray(aboutDataCached.sliding_images)) {
+                        const aboutImgKeys = [
+                            'g1RWtjflHS2M53QcEU764KSVuik',
+                            'rtCbmzN4khPthDxAW6vxpyN3as',
+                            'ZTA5Vxos3aZkpvYaimkTbJufRs',
+                            '5x5ca9FKJLnltN8Z6xTKt34kIXg'
+                        ];
+                        aboutImgKeys.forEach((key, idx) => {
+                            if (src.includes(key) || srcset.includes(key)) {
+                                const targetImg = aboutDataCached.sliding_images[idx % aboutDataCached.sliding_images.length];
+                                if (targetImg) {
+                                    let cleanPath = targetImg;
+                                    if (!cleanPath.startsWith('http') && !cleanPath.startsWith('data:')) {
+                                        if (cleanPath.startsWith('../')) cleanPath = cleanPath.slice(3);
+                                        else if (cleanPath.startsWith('./')) cleanPath = cleanPath.slice(2);
+                                        cleanPath = prefix + cleanPath;
+                                    }
+                                    node.setAttribute('src', cleanPath);
+                                    node.removeAttribute('srcset');
+                                }
+                            }
+                        });
                     }
                 }
             } else if (mut.type === 'characterData') {
