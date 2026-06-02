@@ -99,7 +99,14 @@ htmlFiles.forEach(filePath => {
                     e.stopPropagation();
                     e.stopImmediatePropagation();
                     
-                    targetEl.scrollIntoView({ behavior: 'smooth' });
+                    if (window._lenis && typeof window._lenis.scrollTo === 'function') {
+                        window._lenis.scrollTo(targetEl, { offset: 0 });
+                    } else {
+                        if (window._lenis && typeof window._lenis.scrollTo === 'function') {
+                        window._lenis.scrollTo(targetEl, { offset: 0 });
+                    } else {
+                        targetEl.scrollIntoView({ behavior: 'smooth' });
+                    }
                     history.replaceState(null, null, '#' + targetSection);
 
                     // If it is a mobile menu link, try to close the mobile menu drawer
