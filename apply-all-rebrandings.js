@@ -1722,6 +1722,9 @@ htmlFiles.forEach(filePath => {
     content = content.replace(/>\s*Selected\s+work\s*<\/h1>/gi, `>${tickerReplacement}</h1>`);
     content = content.replace(/TKA SYLUM/g, 'THE KOTA');
 
+    // G. Footer Copyright
+    content = content.replace(/<strong class="framer-text">Ridhwan Co\.<\/strong>/g, '<a href="https://hexcode.lk/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;"><strong class="framer-text">HexCode</strong></a>');
+
     if (content !== original) {
         fs.writeFileSync(filePath, content, 'utf8');
         console.log(`Successfully rebranded ${relativePath}`);
