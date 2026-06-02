@@ -809,96 +809,115 @@ htmlFiles.forEach(filePath => {
     function applyPricingData(data) {
         if (!data) return;
 
-        const pricingSection = document.querySelector('[data-framer-name="Pricing Section"]');
-        if (pricingSection) {
-            const sectionTitleP = pricingSection.querySelector('.framer-6dslhd h1');
+        // Inject CSS to fix the text clipping on the Price component
+        if (!document.getElementById('kota-pricing-css')) {
+            const style = document.createElement('style');
+            style.id = 'kota-pricing-css';
+            style.innerHTML = \`
+                [data-framer-name="Price"] [data-framer-component-type="RichTextContainer"] {
+                    overflow: visible !important;
+                    width: auto !important;
+                    min-width: max-content !important;
+                    white-space: nowrap !important;
+                }
+                [data-framer-name="Price"] {
+                    overflow: visible !important;
+                }
+            \`;
+            document.head.appendChild(style);
+        }
+
+        const pricingSections = document.querySelectorAll('[data-framer-name="Pricing Section"]');
+        
+        pricingSections.forEach(pricingSection => {
+            const sectionTitleP = pricingSection.querySelector('.framer-6dslhd h1, .framer-6dslhd p, [data-framer-name="My Pricing"] h1, [data-framer-name="My Pricing"] p');
             if (sectionTitleP && data.section_title && sectionTitleP.textContent.trim() !== data.section_title) {
                 sectionTitleP.textContent = data.section_title;
             }
-        }
 
-        const planTitleEl = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Plan Title"]');
-        if (!planTitleEl) return;
+            const planTitleEl = pricingSection.querySelector('[data-framer-name="Plan Title"]');
+            if (!planTitleEl) return;
 
-        const currentPlanText = planTitleEl.textContent || '';
-        let activePlanKey = 'standard';
-        if (currentPlanText.includes('Premium')) {
-            activePlanKey = 'premium';
-        }
-
-        const activePlan = data.plans[activePlanKey];
-        if (!activePlan) return;
-
-        const planTitlePs = planTitleEl.querySelectorAll('p');
-        planTitlePs.forEach(p => {
-            if (p.textContent.trim() !== activePlan.title) {
-                p.textContent = activePlan.title;
+            const currentPlanText = planTitleEl.textContent || '';
+            let activePlanKey = 'standard';
+            if (currentPlanText.includes('Premium')) {
+                activePlanKey = 'premium';
             }
-        });
 
-        const descContainer = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Standard Plan & Text"] > [data-framer-component-type="RichTextContainer"]:last-child');
-        if (descContainer) {
-            const descP = descContainer.querySelector('p');
-            if (descP && descP.textContent.trim() !== activePlan.description) {
-                descP.textContent = activePlan.description;
-            }
-        }
+            const activePlan = data.plans[activePlanKey];
+            if (!activePlan) return;
 
-        const priceContainer = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Price"]');
-        if (priceContainer) {
-            const priceHeaders = priceContainer.querySelectorAll('h1');
-            priceHeaders.forEach(h1 => {
-                if (h1.textContent.trim() !== activePlan.price) {
-                    h1.textContent = activePlan.price;
+            const planTitlePs = planTitleEl.querySelectorAll('p, h1, h2, h3');
+            planTitlePs.forEach(p => {
+                if (p.textContent.trim() !== activePlan.title) {
+                    p.textContent = activePlan.title;
                 }
             });
-            
-            const suffixP = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Price Hours"] p');
-            if (suffixP && suffixP.textContent.trim() !== activePlan.price_suffix.trim()) {
-                suffixP.innerHTML = '&nbsp;' + activePlan.price_suffix.trim();
-            }
-        }
 
-        if (Array.isArray(activePlan.features)) {
-            const pricingCard = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Pricing"]');
-            if (pricingCard) {
-                const pointContainers = pricingCard.querySelectorAll('[data-framer-name^="Point "]');
-                pointContainers.forEach(container => {
-                    const name = container.getAttribute('data-framer-name') || '';
-                    let idx = -1;
-                    const match = name.match(/Point\s+(\d+)/i);
-                    if (match) {
-                        idx = parseInt(match[1], 10) - 1;
-                    }
-                    
-                    if (idx !== -1) {
-                        const p = container.querySelector('p');
-                        if (p) {
-                            const featureText = activePlan.features[idx];
-                            if (featureText) {
-                                container.style.removeProperty('display');
-                                if (p.textContent.trim() !== featureText) {
-                                    p.textContent = featureText;
-                                }
-                            } else {
-                                container.style.setProperty('display', 'none', 'important');
-                            }
-                        }
+            const descContainer = pricingSection.querySelector('[data-framer-name="Standard Plan & Text"] > [data-framer-component-type="RichTextContainer"]:last-child');
+            if (descContainer) {
+                const descP = descContainer.querySelector('p, span');
+                if (descP && descP.textContent.trim() !== activePlan.description) {
+                    descP.textContent = activePlan.description;
+                }
+            }
+
+            const priceContainer = pricingSection.querySelector('[data-framer-name="Price"]');
+            if (priceContainer) {
+                const priceTextNodes = priceContainer.querySelectorAll('[data-framer-name="Variant 1"] [data-framer-component-type="RichTextContainer"]:first-child > *, [data-framer-name="Variant 2"] [data-framer-component-type="RichTextContainer"]:first-child > *');
+                priceTextNodes.forEach(node => {
+                    if (node.textContent.trim() !== activePlan.price) {
+                        node.textContent = activePlan.price;
                     }
                 });
+                
+                const suffixP = pricingSection.querySelector('[data-framer-name="Price Hours"] p, [data-framer-name="Price Hours"] span');
+                if (suffixP && suffixP.textContent.trim() !== activePlan.price_suffix.trim()) {
+                    suffixP.innerHTML = '&nbsp;' + activePlan.price_suffix.trim();
+                }
             }
-        }
 
-        const button = document.querySelector('[data-framer-name="Pricing Section"] [data-framer-name="Pricing"] a[data-framer-name="Light Variant"]');
-        if (button) {
-            if (activePlan.button_url && button.getAttribute('href') !== activePlan.button_url) {
-                button.setAttribute('href', activePlan.button_url);
+            if (Array.isArray(activePlan.features)) {
+                const pricingCard = pricingSection.querySelector('[data-framer-name="Pricing"]');
+                if (pricingCard) {
+                    const pointContainers = pricingCard.querySelectorAll('[data-framer-name^="Point "]');
+                    pointContainers.forEach(container => {
+                        const name = container.getAttribute('data-framer-name') || '';
+                        let idx = -1;
+                        const match = name.match(/Point\s+(\d+)/i);
+                        if (match) {
+                            idx = parseInt(match[1], 10) - 1;
+                        }
+                        
+                        if (idx !== -1) {
+                            const p = container.querySelector('p, span');
+                            if (p) {
+                                const featureText = activePlan.features[idx];
+                                if (featureText) {
+                                    container.style.removeProperty('display');
+                                    if (p.textContent.trim() !== featureText) {
+                                        p.textContent = featureText;
+                                    }
+                                } else {
+                                    container.style.setProperty('display', 'none', 'important');
+                                }
+                            }
+                        }
+                    });
+                }
             }
-            const btnP = button.querySelector('p');
-            if (btnP && activePlan.button_text && btnP.textContent.trim() !== activePlan.button_text) {
-                btnP.textContent = activePlan.button_text;
+
+            const button = pricingSection.querySelector('[data-framer-name="Pricing"] a[data-framer-name="Light Variant"], [data-framer-name="Pricing"] a');
+            if (button) {
+                if (activePlan.button_url && button.getAttribute('href') !== activePlan.button_url) {
+                    button.setAttribute('href', activePlan.button_url);
+                }
+                const btnP = button.querySelector('p, span');
+                if (btnP && activePlan.button_text && btnP.textContent.trim() !== activePlan.button_text) {
+                    btnP.textContent = activePlan.button_text;
+                }
             }
-        }
+        });
     }
 
     function setupAwards() {
