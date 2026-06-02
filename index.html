@@ -10,6 +10,94 @@
     function debugLog(msg) {} // Empty debug log helper for visual cleanup
 
     const prefix = '';
+    
+    const sectionMap = {
+        'Home': 'home',
+        'works': 'work',
+        'Services': 'service',
+        'About': 'about',
+        'Testimonial': 'testimonial',
+        'Pricing': 'pricing',
+        'FAQ': 'faq',
+        'Contact': 'contact'
+    };
+
+    // Register click interceptor immediately on window in the capture phase to run before Framer / React Router
+    if (!window.sidebarClickDelegated) {
+        window.sidebarClickDelegated = true;
+        window.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href') || '';
+            const name = link.getAttribute('data-framer-name') || '';
+
+            // Check if it's an external link
+            const isExternal = href.startsWith('http') && !href.startsWith(window.location.origin);
+            if (isExternal) return;
+
+            let targetSection = null;
+
+            // 1. Resolve by data-framer-name
+            if (name && sectionMap[name]) {
+                targetSection = sectionMap[name];
+            }
+
+            // 2. Resolve by href matching
+            if (!targetSection && href) {
+                let hash = '';
+                try {
+                    const url = new URL(href, window.location.href);
+                    hash = url.hash;
+                    if (hash) {
+                        const cleanHash = hash.replace('#', '');
+                        if (Object.values(sectionMap).includes(cleanHash)) {
+                            targetSection = cleanHash;
+                        }
+                    } else {
+                        const path = url.pathname.toLowerCase();
+                        for (const [key, sectionId] of Object.entries(sectionMap)) {
+                            if (path.endsWith('/' + sectionId) || path.endsWith('/' + sectionId + '.html') || path === sectionId || path === sectionId + '.html') {
+                                targetSection = sectionId;
+                                break;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    for (const [key, sectionId] of Object.entries(sectionMap)) {
+                        if (href === '#' + sectionId || href.endsWith('/' + sectionId) || href.endsWith('/' + sectionId + '.html') || href === sectionId + '.html') {
+                            targetSection = sectionId;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (targetSection) {
+                const targetEl = document.getElementById(targetSection);
+                if (targetEl) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    
+                    targetEl.scrollIntoView({ behavior: 'smooth' });
+                    history.replaceState(null, null, '#' + targetSection);
+
+                    // If it is a mobile menu link, try to close the mobile menu drawer
+                    const isMobileMenuLink = link.closest('[data-framer-name="Mobile Menu"]') || link.closest('.framer-1jlvlga') || link.closest('#1jlvlga');
+                    if (isMobileMenuLink) {
+                        setTimeout(() => {
+                            const overlay = document.getElementById('overlay') || document.getElementById('template-overlay');
+                            if (overlay) overlay.click();
+                            const trigger = document.querySelector('[data-framer-name="Mobile Menu Icon"]');
+                            if (trigger) trigger.click();
+                        }, 300);
+                    }
+                }
+            }
+        }, true);
+    }
+
     const styles = {
         '--token-97f7c01c-d33b-43e8-b4ec-1f1d7bb2db56': '#EA0813',
         '--token-c9420d': '#C20710',
@@ -137,8 +225,7 @@
                 /* Ensure Icon buttons inside Social Icons render their SVG reliably and centered */
                 [data-framer-name="Social Icons"] [data-framer-name="Icon"],
                 .framer-1nsshvn,
-                .framer-1wdch0p,
-                .framer-daxxmo {
+                .framer-1wdch0p {
                     display: inline-flex !important;
                     align-items: center !important;
                     justify-content: center !important;
@@ -164,7 +251,8 @@
                     display: block !important;
                 }
                 /* Hide duplicate SVG children inside Icon containers (Framer often injects two variants) */
-                [data-framer-name="Social Icons"] [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
+                [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"],
+                .framer-1nsshvn > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
                     display: none !important;
                 }
                 /* Remove the thin 'More Info' bar under the counters and other unwanted sections */
@@ -182,9 +270,26 @@
                 a[data-framer-name="Pricing"],
                 .framer-1flij53,
                 [data-framer-name="Select your Budget"],
+                [data-framer-name="Partner"],
                 [data-framer-name="My Services"] {
                     display: none !important;
                 }
+
+
+
+                /* Increase hero text size which was too small */
+                .framer-styles-preset-1e8ex7u:not(.rich-text-wrapper),
+                .framer-styles-preset-1e8ex7u.rich-text-wrapper p {
+                    --framer-font-size: 30px !important;
+                    --framer-line-height: 40px !important;
+                }
+                
+                /* Increase button text size */
+                .framer-styles-preset-13b29z:not(.rich-text-wrapper),
+                .framer-styles-preset-13b29z.rich-text-wrapper p {
+                    --framer-font-size: 20px !important;
+                }
+
                 /* Make Counter tiles smaller, more compact & highly creative */
                 [data-framer-name="Counter One"],
                 [data-framer-name="Counter Two"] {
@@ -326,75 +431,7 @@
                     flex-grow: 1 !important;
                 }
 
-                /* Reduce Main Title Font Size by 25% */
-                [data-styles-preset="tOUh8Virz"],
-                .framer-styles-preset-1e8ex7u {
-                    font-size: 75% !important;
-                    line-height: 1.2 !important;
-                }
 
-                /* Shrunk Spacing Above & Below Title Section */
-                .framer-lQfOg .framer-i1tgta {
-                    gap: 55px !important; /* reduced from 82px */
-                }
-                .framer-lQfOg .framer-1s5m8nf {
-                    padding: 30px 0 !important; /* reduced from 47px 0 */
-                }
-                @media (max-width: 810px) {
-                    .framer-lQfOg .framer-i1tgta {
-                        gap: 45px !important; /* reduced from 71px */
-                    }
-                }
-                @media (max-width: 500px) {
-                    .framer-lQfOg .framer-i1tgta {
-                        gap: 30px !important; /* reduced from 40px */
-                    }
-                }
-
-                /* Reduce YouTube Button by 30% proportionally */
-                .framer-xnj6W.framer-1ek0kfc {
-                    padding: 2px 2px 2px 22px !important;
-                    gap: 13px !important;
-                    border-radius: 69px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-14tc07z,
-                .framer-xnj6W.framer-1ek0kfc .framer-k8afsp {
-                    border-radius: 69px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-1nsshvn {
-                    padding: 10px !important;
-                    border-radius: 69px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-1wdch0p,
-                .framer-xnj6W.framer-1ek0kfc .framer-daxxmo {
-                    width: 13px !important;
-                    height: 13px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-styles-preset-13b29z {
-                    font-size: 0.7em !important;
-                }
-
-                /* Shrunk Selected Work Video Cards typography and button */
-                .framer-wkncrm,
-                .framer-wkncrm p {
-                    font-size: 26px !important;
-                    line-height: 1.25 !important;
-                }
-                .framer-oivizu,
-                .framer-oivizu p,
-                .framer-zh8net,
-                .framer-zh8net p {
-                    font-size: 14px !important;
-                }
-                /* Shrink Card Redirect Arrow Button */
-                .framer-uKxpC .framer-1svl0xp {
-                    padding: 24px !important; /* Shrunk from 40px */
-                    border-radius: 16px !important; /* Sleeker rounded corners */
-                }
-                .framer-uKxpC .framer-7p3ic2 {
-                    width: 24px !important; /* Shrunk from 40px */
-                    height: 24px !important;
-                }
             `;
             document.head.appendChild(styleEl);
         }
@@ -433,10 +470,19 @@
         setupBrandsSection();
         setupPricingSection();
         setupSidebarScrollSpy();
+        setupSidebarTooltips();
         setupFooter();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
+
+        // browser arrow SVG fallback fix
+        try {
+            const rawArrowSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-up-right"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/></svg>`;
+            document.querySelectorAll('.framer-1wdch0p .svgContainer, .framer-daxxmo .svgContainer').forEach(container => {
+                container.innerHTML = rawArrowSvg;
+            });
+        } catch (e) {}
     }
 
     function setupFooter() {
@@ -455,17 +501,6 @@
         const sidebarLinks = document.querySelectorAll('.framer-8vx74n');
         if (!sidebarLinks.length) return;
         window.sidebarScrollSpyInitialized = true;
-
-        const sectionMap = {
-            'Home': 'home',
-            'works': 'work',
-            'Services': 'service',
-            'About': 'about',
-            'Testimonial': 'testimonial',
-            'Pricing': 'pricing',
-            'FAQ': 'faq',
-            'Contact': 'contact'
-        };
 
         if (!document.getElementById('kota-sidebar-css')) {
             const style = document.createElement('style');
@@ -492,6 +527,38 @@
                     z-index: 9999;
                     pointer-events: none;
                 }
+                /* Hide unused sidebar links and their tooltips */
+                .framer-1lz3o7g,
+                .framer-8bsdwd,
+                [data-framer-name="Side Bar"] a[data-framer-name="Services"],
+                [data-framer-name="Side Bar"] a[data-framer-name="Pricing"],
+                [data-framer-name="Side Bar"] a[data-framer-name="FAQ"],
+                [data-framer-name="Side Bar"] div[data-framer-name="Services"],
+                [data-framer-name="Side Bar"] div[data-framer-name="Pricing"],
+                [data-framer-name="Side Bar"] div[data-framer-name="FAQ"] {
+                    display: none !important;
+                }
+                /* Realignment styling for sidebar tooltips */
+                [data-framer-name="Side Bar"] a.framer-8vx74n {
+                    position: relative !important;
+                }
+                [data-framer-name="Side Bar"] a.framer-8vx74n > div[data-framer-name] {
+                    position: absolute !important;
+                    top: 50% !important;
+                    left: -15px !important;
+                    transform: translate(-100%, -50%) !important;
+                    margin: 0 !important;
+                    bottom: auto !important;
+                    right: auto !important;
+                    opacity: 0 !important;
+                    pointer-events: none !important;
+                    transition: opacity 0.25s ease-in-out !important;
+                    display: flex !important;
+                    z-index: 99999 !important;
+                }
+                [data-framer-name="Side Bar"] a.framer-8vx74n:hover > div[data-framer-name] {
+                    opacity: 1 !important;
+                }
             `;
             document.head.appendChild(style);
         }
@@ -503,17 +570,6 @@
                 const sectionId = sectionMap[name];
                 linkMap[sectionId] = link;
             }
-            
-            link.addEventListener('click', (e) => {
-                if (name && sectionMap[name]) {
-                    const targetEl = document.getElementById(sectionMap[name]);
-                    if (targetEl) {
-                        e.preventDefault();
-                        targetEl.scrollIntoView({ behavior: 'smooth' });
-                        history.replaceState(null, null, '#' + sectionMap[name]);
-                    }
-                }
-            });
         });
 
         const observerOptions = {
@@ -540,6 +596,56 @@
             if (el) observer.observe(el);
         });
     }
+
+    function setupSidebarTooltips() {
+        const sidebar = document.querySelector('[data-framer-name="Side Bar"]');
+        if (!sidebar) return;
+        
+        function performMove() {
+            const sidebarLinks = sidebar.querySelectorAll('a.framer-8vx74n');
+            sidebarLinks.forEach(link => {
+                const name = link.getAttribute('data-framer-name');
+                if (!name) return;
+                
+                const tooltips = sidebar.querySelectorAll('div[data-framer-name]');
+                let tooltip = null;
+                for (const t of tooltips) {
+                    const tName = t.getAttribute('data-framer-name') || '';
+                    if (tName.toLowerCase() === name.toLowerCase() || 
+                        (name.toLowerCase() === 'testimonial' && tName.toLowerCase() === 'testimonial') ||
+                        (name.toLowerCase() === 'works' && tName.toLowerCase() === 'works')) {
+                        tooltip = t;
+                        break;
+                    }
+                }
+                
+                if (tooltip) {
+                    if (name.toLowerCase() === 'testimonial') {
+                        const p = tooltip.querySelector('p');
+                        if (p && p.textContent.trim() !== 'Comments') {
+                            p.textContent = 'Comments';
+                        }
+                    }
+                    if (tooltip.parentElement === sidebar) {
+                        link.appendChild(tooltip);
+                    }
+                }
+            });
+        }
+
+        performMove();
+
+        if (!sidebar._kotaObserver) {
+            const observer = new MutationObserver(() => {
+                observer.disconnect();
+                performMove();
+                observer.observe(sidebar, { childList: true });
+            });
+            observer.observe(sidebar, { childList: true });
+            sidebar._kotaObserver = observer;
+        }
+    }
+
 
     function setupYoutubeCards() {
         debugLog('setupYoutubeCards() starting...');
@@ -636,6 +742,23 @@
         if (testimonialSection && testimonialSection.id !== 'testimonial') {
             testimonialSection.id = 'testimonial';
         }
+
+        // Change the testimonials heading/label to "Comments" dynamically to prevent hydration reversion
+        try {
+            if (testimonialSection) {
+                testimonialSection.querySelectorAll('[data-framer-component-type="RichTextContainer"]').forEach(el => {
+                    if (el.innerText) {
+                        el.innerHTML = el.innerHTML
+                            .replace(/Testimonials/g, 'Comments')
+                            .replace(/TESTIMONIALS/g, 'COMMENTS')
+                            .replace(/testimonials/g, 'comments')
+                            .replace(/Testimonial/g, 'Comment')
+                            .replace(/TESTIMONIAL/g, 'COMMENT')
+                            .replace(/testimonial/g, 'comment');
+                    }
+                });
+            }
+        } catch (e) {}
         
         fetch(prefix + "data/comments.json?v=" + Date.now())
             .then(res => res.json())
@@ -1018,6 +1141,7 @@
             const style = document.createElement('style');
             style.id = 'kota-awards-css';
             style.innerHTML = `
+                [data-framer-name="Awards Section"], [data-framer-name="Awards"] { display: none !important; }
                 .award-item {
                     display: flex;
                     flex-direction: column;
@@ -1334,12 +1458,21 @@
         if (!node || node.tagName !== 'A') return;
         const href = node.getAttribute('href') || '';
         const name = node.getAttribute('data-framer-name') || '';
-        if (href.includes('work.html') || name.toLowerCase() === 'works') {
+        const lowerName = name.toLowerCase();
+        if (href.includes('work.html') || lowerName === 'works' || lowerName === 'work') {
             node.setAttribute('href', prefix + 'index.html#work');
-        } else if (href.includes('service.html') || name.toLowerCase() === 'services') {
+        } else if (href.includes('service.html') || lowerName === 'services' || lowerName === 'service') {
             node.setAttribute('href', prefix + 'index.html#service');
-        } else if (href.includes('about.html') || name.toLowerCase() === 'about') {
+        } else if (href.includes('about.html') || lowerName === 'about') {
             node.setAttribute('href', prefix + 'index.html#about');
+        } else if (href.includes('contact.html') || lowerName === 'contact') {
+            node.setAttribute('href', prefix + 'index.html#contact');
+        } else if (href.includes('testimonial.html') || lowerName === 'testimonial' || lowerName === 'testimonials') {
+            node.setAttribute('href', prefix + 'index.html#testimonial');
+        } else if (href.includes('pricing.html') || lowerName === 'pricing') {
+            node.setAttribute('href', prefix + 'index.html#pricing');
+        } else if (href.includes('faq.html') || lowerName === 'faq') {
+            node.setAttribute('href', prefix + 'index.html#faq');
         }
     }
 
@@ -1506,6 +1639,28 @@
                 } else if (src.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY')) {
                     node.setAttribute('src', prefix + 'Assets/Kota Text.png');
                     node.removeAttribute('srcset');
+                } else if (typeof aboutDataCached !== 'undefined' && aboutDataCached && Array.isArray(aboutDataCached.sliding_images)) {
+                    const aboutImgKeys = [
+                        'g1RWtjflHS2M53QcEU764KSVuik',
+                        'rtCbmzN4khPthDxAW6vxpyN3as',
+                        'ZTA5Vxos3aZkpvYaimkTbJufRs',
+                        '5x5ca9FKJLnltN8Z6xTKt34kIXg'
+                    ];
+                    aboutImgKeys.forEach((key, idx) => {
+                        if (src.includes(key) || srcset.includes(key)) {
+                            const targetImg = aboutDataCached.sliding_images[idx % aboutDataCached.sliding_images.length];
+                            if (targetImg) {
+                                let cleanPath = targetImg;
+                                if (!cleanPath.startsWith('http') && !cleanPath.startsWith('data:')) {
+                                    if (cleanPath.startsWith('../')) cleanPath = cleanPath.slice(3);
+                                    else if (cleanPath.startsWith('./')) cleanPath = cleanPath.slice(2);
+                                    cleanPath = prefix + cleanPath;
+                                }
+                                node.setAttribute('src', cleanPath);
+                                node.removeAttribute('srcset');
+                            }
+                        }
+                    });
                 }
             }
             for (let child = node.firstChild; child; child = child.nextSibling) {
@@ -1607,28 +1762,6 @@
                     } else if (src.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY') || srcset.includes('rjytgkPUT' + 'bFjrXmIX6Muq6ybMLY')) {
                         node.setAttribute('src', prefix + 'Assets/Kota Text.png');
                         node.removeAttribute('srcset');
-                    } else if (typeof aboutDataCached !== 'undefined' && aboutDataCached && Array.isArray(aboutDataCached.sliding_images)) {
-                        const aboutImgKeys = [
-                            'g1RWtjflHS2M53QcEU764KSVuik',
-                            'rtCbmzN4khPthDxAW6vxpyN3as',
-                            'ZTA5Vxos3aZkpvYaimkTbJufRs',
-                            '5x5ca9FKJLnltN8Z6xTKt34kIXg'
-                        ];
-                        aboutImgKeys.forEach((key, idx) => {
-                            if (src.includes(key) || srcset.includes(key)) {
-                                const targetImg = aboutDataCached.sliding_images[idx % aboutDataCached.sliding_images.length];
-                                if (targetImg) {
-                                    let cleanPath = targetImg;
-                                    if (!cleanPath.startsWith('http') && !cleanPath.startsWith('data:')) {
-                                        if (cleanPath.startsWith('../')) cleanPath = cleanPath.slice(3);
-                                        else if (cleanPath.startsWith('./')) cleanPath = cleanPath.slice(2);
-                                        cleanPath = prefix + cleanPath;
-                                    }
-                                    node.setAttribute('src', cleanPath);
-                                    node.removeAttribute('srcset');
-                                }
-                            }
-                        });
                     }
                 }
             } else if (mut.type === 'characterData') {
@@ -6586,14 +6719,14 @@
       --framer-font-family-bold:
         "Rajdhani", "Rajdhani Placeholder", sans-serif;
       --framer-font-open-type-features: normal;
-      --framer-font-size: 20px;
+      --framer-font-size: 28px;
       --framer-font-style: normal;
       --framer-font-style-bold: normal;
       --framer-font-variation-axes: normal;
       --framer-font-weight: 400;
       --framer-font-weight-bold: 700;
       --framer-letter-spacing: 0em;
-      --framer-line-height: 28px;
+      --framer-line-height: 36px;
       --framer-paragraph-spacing: 0px;
       --framer-text-alignment: start;
       --framer-text-color: var(--token-34a89468-8ad2-4ee4-85c5-76b0d5cefaae,
@@ -8325,7 +8458,7 @@
         "Inter", "Inter Placeholder", sans-serif;
       --framer-font-family-italic: "Inter", "Inter Placeholder", sans-serif;
       --framer-font-open-type-features: normal;
-      --framer-font-size: 18px;
+      --framer-font-size: 20px;
       --framer-font-style: normal;
       --framer-font-style-bold: normal;
       --framer-font-style-bold-italic: italic;
@@ -8336,7 +8469,7 @@
       --framer-font-weight-bold-italic: 700;
       --framer-font-weight-italic: 400;
       --framer-letter-spacing: 0px;
-      --framer-line-height: 28px;
+      --framer-line-height: 30px;
       --framer-paragraph-spacing: 20px;
       --framer-text-alignment: start;
       --framer-text-color: var(--token-4c74a3d6-b127-4b0e-b8c2-24d33ca01186,
@@ -12434,7 +12567,7 @@
                     "></div>
               </div>
               <div class="framer-1ojeln4" data-framer-name="Sub Container">
-                <!--$--><a data-framer-component-type="SVG" as="a" data-framer-name="Logo" href="index.html#home"
+                <!--$--><a data-framer-component-type="SVG" as="a" data-framer-name="Logo" href="#home"
                   parentsize="0" _constraints="[object Object]" rotation="0" shadows
                   class="framer-11peldu framer-18evxz6" aria-hidden="true"
                   style="image-rendering: pixelated; flex-shrink: 0"><div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div></a><!--/$-->
@@ -12568,7 +12701,7 @@
                     "></div>
               </div>
               <div class="framer-1ojeln4" data-framer-name="Sub Container">
-                <!--$--><a data-framer-component-type="SVG" as="a" data-framer-name="Logo" href="index.html#home"
+                <!--$--><a data-framer-component-type="SVG" as="a" data-framer-name="Logo" href="#home"
                   parentsize="0" _constraints="[object Object]" rotation="0" shadows
                   class="framer-11peldu framer-18evxz6" aria-hidden="true"
                   style="image-rendering: pixelated; flex-shrink: 0"><div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div></a><!--/$-->
@@ -12702,7 +12835,7 @@
                     "></div>
               </div>
               <div class="framer-1ojeln4" data-framer-name="Sub Container">
-                <!--$--><a data-framer-component-type="SVG" as="a" data-framer-name="Logo" href="index.html#home"
+                <!--$--><a data-framer-component-type="SVG" as="a" data-framer-name="Logo" href="#home"
                   parentsize="0" _constraints="[object Object]" rotation="0" shadows
                   class="framer-11peldu framer-18evxz6" aria-hidden="true"
                   style="image-rendering: pixelated; flex-shrink: 0"><div class="svgContainer" style="width: 100%; height: 100%; aspect-ratio: inherit"><img src="Assets/Kota Text.png" alt="Logo" style="display: block; width: 100%; height: 100%; object-position: center; object-fit: contain;" /></div></a><!--/$-->
@@ -13138,7 +13271,7 @@
                               height: 100%;
                               aspect-ratio: inherit;
                             ">
-                          <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
+                          <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
                             <use href="#svg-249122327_280" />
                           </svg>
                         </div>
@@ -13162,7 +13295,7 @@
                               height: 100%;
                               aspect-ratio: inherit;
                             ">
-                          <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
+                          <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
                             <use href="#svg-249122327_280" />
                           </svg>
                         </div>
@@ -18350,7 +18483,7 @@
                                   )
                                 );
                               ">
-                            Testimonial
+                            Comments
                           </p>
                         </div>
                       </div>
@@ -18854,7 +18987,7 @@
                                   )
                                 );
                               ">
-                            Testimonial
+                            Comments
                           </p>
                         </div>
                       </div>
@@ -19362,7 +19495,7 @@
                                   )
                                 );
                               ">
-                            Testimonial
+                            Comments
                           </p>
                         </div>
                       </div>
@@ -21927,7 +22060,7 @@
                           <div class="framer-3rmy51-container">
                             <!--$--><a
                               class="framer-xnj6W framer-qZ6Dp framer-yA5GQ framer-or0TM framer-1ek0kfc framer-v-jdnyw9 framer-1gj8dqd"
-                              data-framer-name="Light Variant" href="contact.html" style="
+                              data-framer-name="Light Variant" href="#contact" style="
                                   border-bottom-left-radius: 99px;
                                   border-bottom-right-radius: 99px;
                                   border-top-left-radius: 99px;
@@ -22000,8 +22133,8 @@
                                         height: 100%;
                                         aspect-ratio: inherit;
                                       ">
-                                    <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                      <use href="#svg-249122327_280" />
+                                    <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                                     </svg>
                                   </div>
                                 </div>
@@ -22024,8 +22157,8 @@
                                         height: 100%;
                                         aspect-ratio: inherit;
                                       ">
-                                    <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                      <use href="#svg-249122327_280" />
+                                    <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                                     </svg>
                                   </div>
                                 </div>
@@ -22628,7 +22761,7 @@
                           <div class="framer-3rmy51-container">
                             <!--$--><a
                               class="framer-xnj6W framer-qZ6Dp framer-yA5GQ framer-or0TM framer-1ek0kfc framer-v-jdnyw9 framer-1gj8dqd"
-                              data-framer-name="Light Variant" href="contact.html" style="
+                              data-framer-name="Light Variant" href="#contact" style="
                                   border-bottom-left-radius: 99px;
                                   border-bottom-right-radius: 99px;
                                   border-top-left-radius: 99px;
@@ -22701,8 +22834,8 @@
                                         height: 100%;
                                         aspect-ratio: inherit;
                                       ">
-                                    <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                      <use href="#svg-249122327_280" />
+                                    <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                                     </svg>
                                   </div>
                                 </div>
@@ -22725,8 +22858,8 @@
                                         height: 100%;
                                         aspect-ratio: inherit;
                                       ">
-                                    <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                      <use href="#svg-249122327_280" />
+                                    <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                                     </svg>
                                   </div>
                                 </div>
@@ -23196,7 +23329,7 @@
                     <p class="framer-text framer-styles-preset-1c4xv0t" data-styles-preset="QlyJIJqX3" dir="auto"
                       style="--framer-text-alignment: center">
                       <!--$--><a class="framer-text framer-styles-preset-1cc064a" data-styles-preset="o20NRCMav"
-                        href="about.html">Ask me directly</a><!--/$-->
+                        href="#about">Ask me directly</a><!--/$-->
                     </p>
                   </div>
                 </div>
@@ -23845,8 +23978,8 @@
                                   height: 100%;
                                   aspect-ratio: inherit;
                                 ">
-                              <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                <use href="#svg-249122327_280" />
+                              <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                               </svg>
                             </div>
                           </div>
@@ -23869,8 +24002,8 @@
                                   height: 100%;
                                   aspect-ratio: inherit;
                                 ">
-                              <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                <use href="#svg-249122327_280" />
+                              <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                               </svg>
                             </div>
                           </div>
@@ -23940,8 +24073,8 @@
                                   height: 100%;
                                   aspect-ratio: inherit;
                                 ">
-                              <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                <use href="#svg-249122327_280" />
+                              <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                               </svg>
                             </div>
                           </div>
@@ -23964,8 +24097,8 @@
                                   height: 100%;
                                   aspect-ratio: inherit;
                                 ">
-                              <svg style="width: 100%; height: 100%" viewBox="0 0 64 64">
-                                <use href="#svg-249122327_280" />
+                              <svg style="width: 100%; height: 100%" viewBox="0 0 16 16">
+                            <use href="#svg-249122327_280" />
                               </svg>
                             </div>
                           </div>
@@ -24028,7 +24161,7 @@
                 border-top-right-radius: 400px;
               ">
             <!--$--><a class="framer-134cfu framer-8vx74n" data-framer-name="Home" data-highlight="true"
-              href="index.html#home" tabindex="0" style="
+              href="#home" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24060,7 +24193,7 @@
                 </div>
               </div>
             </a><!--/$--><!--$--><a class="framer-4iubm6 framer-8vx74n" data-framer-name="works" data-highlight="true"
-              href="work.html" tabindex="0" style="
+              href="#work" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24091,8 +24224,8 @@
                       " />
                 </div>
               </div>
-            </a><!--/$--><!--$--><a class="framer-1lz3o7g framer-8vx74n" data-framer-name="Services"
-              data-highlight="true" href="service.html" tabindex="0" style="
+            </a><!--/$--><!--$--><!-- <a class="framer-1lz3o7g framer-8vx74n" data-framer-name="Services"
+              data-highlight="true" href="#service" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24123,8 +24256,8 @@
                       " />
                 </div>
               </div>
-            </a><!--/$--><!--$--><a class="framer-1hksqj6 framer-8vx74n" data-framer-name="About" data-highlight="true"
-              href="about.html" tabindex="0" style="
+            </a> --><!--/$--><!--$--><a class="framer-1hksqj6 framer-8vx74n" data-framer-name="About" data-highlight="true"
+              href="#about" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24156,7 +24289,7 @@
                 </div>
               </div>
             </a><!--/$--><!--$--><a class="framer-7r1n85 framer-8vx74n" data-framer-name="Testimonial"
-              data-highlight="true" href="index.html#testimonial" tabindex="0" style="
+              data-highlight="true" href="#testimonial" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24188,7 +24321,7 @@
                 </div>
               </div>
             </a><!--/$--><!--$--><a class="framer-wm2aug framer-8vx74n" data-framer-name="Pricing" data-highlight="true"
-              href="index.html#pricing" tabindex="0" style="
+              href="#pricing" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24220,7 +24353,7 @@
                 </div>
               </div>
             </a><!--/$--><!--$--><a class="framer-135zru3 framer-8vx74n" data-framer-name="FAQ" data-highlight="true"
-              href="index.html#faq" tabindex="0" style="
+              href="#faq" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24252,7 +24385,7 @@
                 </div>
               </div>
             </a><!--/$--><!--$--><a class="framer-1qy53n9 framer-8vx74n" data-framer-name="Contact"
-              data-highlight="true" href="contact.html" tabindex="0" style="
+              data-highlight="true" href="#contact" tabindex="0" style="
                   background-color: rgba(255, 255, 255, 0);
                   border-bottom-left-radius: 100%;
                   border-bottom-right-radius: 100%;
@@ -24326,7 +24459,7 @@
                 </p>
               </div>
             </div>
-            <div class="framer-8bsdwd" data-framer-name="Services" style="
+            <!-- <div class="framer-8bsdwd" data-framer-name="Services" style="
                   background-color: var(
                     --token-0ee352e1-d1bb-44f4-8e00-e1d26a29c657,
                     rgba(255, 255, 255, 0.1)
@@ -24346,7 +24479,7 @@
                   Services
                 </p>
               </div>
-            </div>
+            </div> -->
             <div class="framer-13f9xb4" data-framer-name="About" style="
                   background-color: var(
                     --token-0ee352e1-d1bb-44f4-8e00-e1d26a29c657,
@@ -24385,7 +24518,7 @@
                     transform: none;
                   ">
                 <p class="framer-text framer-styles-preset-14j1xb2" data-styles-preset="ecaySVmyl">
-                  Testimonial
+                  Comments
                 </p>
               </div>
             </div>
@@ -26682,7 +26815,7 @@
         d="M 49.26 8.068 L 50.772 8.068 C 51.044 8.068 51.18 8.196 51.18 8.452 L 51.18 19.78 C 51.18 20.948 50.852 21.86 50.196 22.516 C 49.54 23.172 48.628 23.5 47.46 23.5 L 45.06 23.5 C 43.876 23.5 42.956 23.172 42.3 22.516 C 41.644 21.86 41.316 20.948 41.316 19.78 L 41.316 17.62 C 41.316 17.348 41.46 17.212 41.748 17.212 L 43.26 17.212 C 43.532 17.212 43.668 17.348 43.668 17.62 L 43.668 19.684 C 43.668 20.868 44.244 21.46 45.396 21.46 L 47.1 21.46 C 48.252 21.46 48.828 20.868 48.828 19.684 L 48.828 8.476 C 48.828 8.204 48.972 8.068 49.26 8.068 Z M 58.733 23.5 L 57.797 23.5 C 56.613 23.5 55.693 23.172 55.037 22.516 C 54.397 21.86 54.077 20.948 54.077 19.78 L 54.077 14.98 C 54.077 13.796 54.397 12.884 55.037 12.244 C 55.693 11.588 56.613 11.26 57.797 11.26 L 63.173 11.26 C 63.461 11.26 63.605 11.396 63.605 11.668 L 63.605 23.092 C 63.605 23.364 63.461 23.5 63.173 23.5 L 61.66 23.5 C 61.388 23.5 61.252 23.364 61.252 23.092 L 61.252 22.228 L 61.156 22.228 C 60.772 23.076 59.964 23.5 58.732 23.5 Z M 61.253 19.42 L 61.253 13.54 C 61.253 13.38 61.165 13.3 60.989 13.3 L 58.133 13.3 C 56.981 13.3 56.405 13.892 56.405 15.076 L 56.405 19.684 C 56.405 20.868 56.981 21.46 58.133 21.46 L 59.285 21.46 C 60.597 21.46 61.253 20.78 61.253 19.42 Z M 68.038 27.388 L 66.766 27.388 C 66.494 27.388 66.358 27.252 66.358 26.98 L 66.358 25.756 C 66.358 25.468 66.494 25.324 66.766 25.324 L 67.318 25.324 C 68.294 25.324 68.966 25.132 69.334 24.748 C 69.718 24.364 70.038 23.732 70.294 22.852 L 69.334 22.852 C 69.094 22.852 68.926 22.716 68.83 22.444 L 65.638 11.668 C 65.574 11.396 65.678 11.26 65.95 11.26 L 67.558 11.26 C 67.814 11.26 67.974 11.396 68.038 11.668 L 70.654 21.076 L 70.75 21.076 L 73.366 11.668 C 73.414 11.396 73.574 11.26 73.846 11.26 L 75.382 11.26 C 75.686 11.26 75.814 11.404 75.766 11.692 L 72.478 23.236 C 72.11 24.58 71.59 25.604 70.918 26.308 C 70.246 27.028 69.286 27.388 68.038 27.388 Z M 82.36 23.5 L 81.136 23.5 C 79.984 23.5 79.096 23.18 78.472 22.54 C 77.864 21.884 77.56 20.964 77.56 19.78 L 77.56 14.98 C 77.56 13.78 77.864 12.86 78.472 12.22 C 79.096 11.58 79.984 11.26 81.136 11.26 L 82.36 11.26 C 83.592 11.26 84.392 11.684 84.76 12.532 L 84.856 12.532 L 84.856 7.036 C 84.856 6.764 84.992 6.628 85.264 6.628 L 86.8 6.628 C 87.072 6.628 87.208 6.764 87.208 7.036 L 87.208 23.092 C 87.208 23.364 87.072 23.5 86.8 23.5 L 85.264 23.5 C 84.992 23.5 84.856 23.364 84.856 23.092 L 84.856 22.228 L 84.76 22.228 C 84.392 23.076 83.592 23.5 82.36 23.5 Z M 84.856 19.42 L 84.856 15.34 C 84.856 13.98 84.2 13.3 82.888 13.3 L 81.616 13.3 C 80.464 13.3 79.888 13.892 79.888 15.076 L 79.888 19.684 C 79.888 20.868 80.464 21.46 81.616 21.46 L 82.888 21.46 C 84.2 21.46 84.856 20.78 84.856 19.42 Z M 98.886 23.5 L 93.702 23.5 C 92.518 23.5 91.598 23.172 90.942 22.516 C 90.302 21.86 89.982 20.948 89.982 19.78 L 89.982 14.98 C 89.982 13.796 90.302 12.884 90.942 12.244 C 91.598 11.588 92.518 11.26 93.702 11.26 L 95.67 11.26 C 96.854 11.26 97.774 11.588 98.43 12.244 C 99.086 12.884 99.414 13.796 99.414 14.98 L 99.414 18.028 C 99.414 18.316 99.27 18.46 98.982 18.46 L 92.55 18.46 C 92.374 18.46 92.286 18.54 92.286 18.7 L 92.286 19.732 C 92.286 20.9 92.87 21.484 94.038 21.484 L 98.886 21.484 C 99.174 21.484 99.318 21.628 99.318 21.916 L 99.318 23.116 C 99.318 23.372 99.174 23.5 98.886 23.5 Z M 92.55 16.828 L 96.846 16.828 C 97.006 16.828 97.086 16.748 97.086 16.588 L 97.086 15.052 C 97.086 14.444 96.95 14.004 96.678 13.732 C 96.406 13.444 95.966 13.3 95.358 13.3 L 94.038 13.3 C 93.43 13.3 92.99 13.444 92.718 13.732 C 92.446 14.004 92.31 14.444 92.31 15.052 L 92.31 16.588 C 92.31 16.748 92.39 16.828 92.55 16.828 Z M 103.978 23.5 L 102.466 23.5 C 102.194 23.5 102.058 23.364 102.058 23.092 L 102.058 11.668 C 102.058 11.396 102.194 11.26 102.466 11.26 L 103.978 11.26 C 104.25 11.26 104.386 11.396 104.386 11.668 L 104.386 12.532 L 104.482 12.532 C 104.866 11.684 105.674 11.26 106.906 11.26 L 107.962 11.26 C 109.13 11.26 110.026 11.58 110.65 12.22 C 111.274 12.86 111.586 13.78 111.586 14.98 L 111.586 23.092 C 111.586 23.364 111.442 23.5 111.154 23.5 L 109.642 23.5 C 109.37 23.5 109.234 23.364 109.234 23.092 L 109.234 15.076 C 109.234 13.892 108.65 13.3 107.482 13.3 L 106.354 13.3 C 105.042 13.3 104.386 13.98 104.386 15.34 L 104.386 23.092 C 104.386 23.364 104.25 23.5 103.978 23.5 Z"
         fill="var(--token-e184c06d-82a7-4ddc-bfb5-020c88d91f80, rgb(255, 255, 255))" />
     </svg>
-    <svg viewBox="0 0 16 16" width="64" height="64" fill="currentColor" class="bi bi-arrow-up-right"
+    <svg viewBox="0 0 16 16" width="100%" height="100%" fill="currentColor" class="bi bi-arrow-up-right"
       id="svg-249122327_280">
       <path fill-rule="evenodd"
         d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z" />

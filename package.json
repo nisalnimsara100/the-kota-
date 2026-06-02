@@ -1,0 +1,7 @@
+{
+  "name": "the-kota",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node apply-all-rebrandings.js"
+  }
+}

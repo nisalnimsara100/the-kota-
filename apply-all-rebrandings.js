@@ -4,24 +4,12 @@ const path = require('path');
 const baseDir = __dirname;
 
 
-function getHtmlFiles(dir) {
-    let files = [];
-    const list = fs.readdirSync(dir);
-    list.forEach(file => {
-        const fullPath = path.join(dir, file);
-        const stat = fs.statSync(fullPath);
-        if (stat.isDirectory()) {
-            if (file !== '.git' && file !== 'node_modules') {
-                files = files.concat(getHtmlFiles(fullPath));
-            }
-        } else if (file.endsWith('.html')) {
-            files.push(fullPath);
-        }
-    });
-    return files;
-}
-
-const htmlFiles = getHtmlFiles(baseDir);
+const htmlFiles = [
+    path.join(baseDir, 'index.html'),
+    path.join(baseDir, 'work', 'x---direct-mobile.html'),
+    path.join(baseDir, 'work', 'helve-website-redesign.html'),
+    path.join(baseDir, 'work', 'ui-ux-agency.html')
+].filter(file => fs.existsSync(file));
 
 const youtubePath = `<path fill="currentColor" d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>`;
 const facebookPath = `<path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>`;
@@ -41,6 +29,94 @@ htmlFiles.forEach(filePath => {
     function debugLog(msg) {} // Empty debug log helper for visual cleanup
 
     const prefix = '${prefix}';
+    
+    const sectionMap = {
+        'Home': 'home',
+        'works': 'work',
+        'Services': 'service',
+        'About': 'about',
+        'Testimonial': 'testimonial',
+        'Pricing': 'pricing',
+        'FAQ': 'faq',
+        'Contact': 'contact'
+    };
+
+    // Register click interceptor immediately on window in the capture phase to run before Framer / React Router
+    if (!window.sidebarClickDelegated) {
+        window.sidebarClickDelegated = true;
+        window.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href') || '';
+            const name = link.getAttribute('data-framer-name') || '';
+
+            // Check if it's an external link
+            const isExternal = href.startsWith('http') && !href.startsWith(window.location.origin);
+            if (isExternal) return;
+
+            let targetSection = null;
+
+            // 1. Resolve by data-framer-name
+            if (name && sectionMap[name]) {
+                targetSection = sectionMap[name];
+            }
+
+            // 2. Resolve by href matching
+            if (!targetSection && href) {
+                let hash = '';
+                try {
+                    const url = new URL(href, window.location.href);
+                    hash = url.hash;
+                    if (hash) {
+                        const cleanHash = hash.replace('#', '');
+                        if (Object.values(sectionMap).includes(cleanHash)) {
+                            targetSection = cleanHash;
+                        }
+                    } else {
+                        const path = url.pathname.toLowerCase();
+                        for (const [key, sectionId] of Object.entries(sectionMap)) {
+                            if (path.endsWith('/' + sectionId) || path.endsWith('/' + sectionId + '.html') || path === sectionId || path === sectionId + '.html') {
+                                targetSection = sectionId;
+                                break;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    for (const [key, sectionId] of Object.entries(sectionMap)) {
+                        if (href === '#' + sectionId || href.endsWith('/' + sectionId) || href.endsWith('/' + sectionId + '.html') || href === sectionId + '.html') {
+                            targetSection = sectionId;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (targetSection) {
+                const targetEl = document.getElementById(targetSection);
+                if (targetEl) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    
+                    targetEl.scrollIntoView({ behavior: 'smooth' });
+                    history.replaceState(null, null, '#' + targetSection);
+
+                    // If it is a mobile menu link, try to close the mobile menu drawer
+                    const isMobileMenuLink = link.closest('[data-framer-name="Mobile Menu"]') || link.closest('.framer-1jlvlga') || link.closest('#1jlvlga');
+                    if (isMobileMenuLink) {
+                        setTimeout(() => {
+                            const overlay = document.getElementById('overlay') || document.getElementById('template-overlay');
+                            if (overlay) overlay.click();
+                            const trigger = document.querySelector('[data-framer-name="Mobile Menu Icon"]');
+                            if (trigger) trigger.click();
+                        }, 300);
+                    }
+                }
+            }
+        }, true);
+    }
+
     const styles = {
         '--token-97f7c01c-d33b-43e8-b4ec-1f1d7bb2db56': '#EA0813',
         '--token-c9420d': '#C20710',
@@ -168,8 +244,7 @@ htmlFiles.forEach(filePath => {
                 /* Ensure Icon buttons inside Social Icons render their SVG reliably and centered */
                 [data-framer-name="Social Icons"] [data-framer-name="Icon"],
                 .framer-1nsshvn,
-                .framer-1wdch0p,
-                .framer-daxxmo {
+                .framer-1wdch0p {
                     display: inline-flex !important;
                     align-items: center !important;
                     justify-content: center !important;
@@ -195,7 +270,8 @@ htmlFiles.forEach(filePath => {
                     display: block !important;
                 }
                 /* Hide duplicate SVG children inside Icon containers (Framer often injects two variants) */
-                [data-framer-name="Social Icons"] [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
+                [data-framer-name="Icon"] > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"],
+                .framer-1nsshvn > [data-framer-component-type="SVG"] + [data-framer-component-type="SVG"] {
                     display: none !important;
                 }
                 /* Remove the thin 'More Info' bar under the counters and other unwanted sections */
@@ -213,9 +289,26 @@ htmlFiles.forEach(filePath => {
                 a[data-framer-name="Pricing"],
                 .framer-1flij53,
                 [data-framer-name="Select your Budget"],
+                [data-framer-name="Partner"],
                 [data-framer-name="My Services"] {
                     display: none !important;
                 }
+
+
+
+                /* Increase hero text size which was too small */
+                .framer-styles-preset-1e8ex7u:not(.rich-text-wrapper),
+                .framer-styles-preset-1e8ex7u.rich-text-wrapper p {
+                    --framer-font-size: 30px !important;
+                    --framer-line-height: 40px !important;
+                }
+                
+                /* Increase button text size */
+                .framer-styles-preset-13b29z:not(.rich-text-wrapper),
+                .framer-styles-preset-13b29z.rich-text-wrapper p {
+                    --framer-font-size: 20px !important;
+                }
+
                 /* Make Counter tiles smaller, more compact & highly creative */
                 [data-framer-name="Counter One"],
                 [data-framer-name="Counter Two"] {
@@ -357,75 +450,7 @@ htmlFiles.forEach(filePath => {
                     flex-grow: 1 !important;
                 }
 
-                /* Reduce Main Title Font Size by 25% */
-                [data-styles-preset="tOUh8Virz"],
-                .framer-styles-preset-1e8ex7u {
-                    font-size: 75% !important;
-                    line-height: 1.2 !important;
-                }
 
-                /* Shrunk Spacing Above & Below Title Section */
-                .framer-lQfOg .framer-i1tgta {
-                    gap: 55px !important; /* reduced from 82px */
-                }
-                .framer-lQfOg .framer-1s5m8nf {
-                    padding: 30px 0 !important; /* reduced from 47px 0 */
-                }
-                @media (max-width: 810px) {
-                    .framer-lQfOg .framer-i1tgta {
-                        gap: 45px !important; /* reduced from 71px */
-                    }
-                }
-                @media (max-width: 500px) {
-                    .framer-lQfOg .framer-i1tgta {
-                        gap: 30px !important; /* reduced from 40px */
-                    }
-                }
-
-                /* Reduce YouTube Button by 30% proportionally */
-                .framer-xnj6W.framer-1ek0kfc {
-                    padding: 2px 2px 2px 22px !important;
-                    gap: 13px !important;
-                    border-radius: 69px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-14tc07z,
-                .framer-xnj6W.framer-1ek0kfc .framer-k8afsp {
-                    border-radius: 69px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-1nsshvn {
-                    padding: 10px !important;
-                    border-radius: 69px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-1wdch0p,
-                .framer-xnj6W.framer-1ek0kfc .framer-daxxmo {
-                    width: 13px !important;
-                    height: 13px !important;
-                }
-                .framer-xnj6W.framer-1ek0kfc .framer-styles-preset-13b29z {
-                    font-size: 0.7em !important;
-                }
-
-                /* Shrunk Selected Work Video Cards typography and button */
-                .framer-wkncrm,
-                .framer-wkncrm p {
-                    font-size: 26px !important;
-                    line-height: 1.25 !important;
-                }
-                .framer-oivizu,
-                .framer-oivizu p,
-                .framer-zh8net,
-                .framer-zh8net p {
-                    font-size: 14px !important;
-                }
-                /* Shrink Card Redirect Arrow Button */
-                .framer-uKxpC .framer-1svl0xp {
-                    padding: 24px !important; /* Shrunk from 40px */
-                    border-radius: 16px !important; /* Sleeker rounded corners */
-                }
-                .framer-uKxpC .framer-7p3ic2 {
-                    width: 24px !important; /* Shrunk from 40px */
-                    height: 24px !important;
-                }
             \`;
             document.head.appendChild(styleEl);
         }
@@ -464,10 +489,19 @@ htmlFiles.forEach(filePath => {
         setupBrandsSection();
         setupPricingSection();
         setupSidebarScrollSpy();
+        setupSidebarTooltips();
         setupFooter();
 
         // Apply custom scroll-reveal typography
         setupCustomScrollReveal();
+
+        // browser arrow SVG fallback fix
+        try {
+            const rawArrowSvg = \`<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="bi bi-arrow-up-right"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/></svg>\`;
+            document.querySelectorAll('.framer-1wdch0p .svgContainer, .framer-daxxmo .svgContainer').forEach(container => {
+                container.innerHTML = rawArrowSvg;
+            });
+        } catch (e) {}
     }
 
     function setupFooter() {
@@ -486,17 +520,6 @@ htmlFiles.forEach(filePath => {
         const sidebarLinks = document.querySelectorAll('.framer-8vx74n');
         if (!sidebarLinks.length) return;
         window.sidebarScrollSpyInitialized = true;
-
-        const sectionMap = {
-            'Home': 'home',
-            'works': 'work',
-            'Services': 'service',
-            'About': 'about',
-            'Testimonial': 'testimonial',
-            'Pricing': 'pricing',
-            'FAQ': 'faq',
-            'Contact': 'contact'
-        };
 
         if (!document.getElementById('kota-sidebar-css')) {
             const style = document.createElement('style');
@@ -523,6 +546,38 @@ htmlFiles.forEach(filePath => {
                     z-index: 9999;
                     pointer-events: none;
                 }
+                /* Hide unused sidebar links and their tooltips */
+                .framer-1lz3o7g,
+                .framer-8bsdwd,
+                [data-framer-name="Side Bar"] a[data-framer-name="Services"],
+                [data-framer-name="Side Bar"] a[data-framer-name="Pricing"],
+                [data-framer-name="Side Bar"] a[data-framer-name="FAQ"],
+                [data-framer-name="Side Bar"] div[data-framer-name="Services"],
+                [data-framer-name="Side Bar"] div[data-framer-name="Pricing"],
+                [data-framer-name="Side Bar"] div[data-framer-name="FAQ"] {
+                    display: none !important;
+                }
+                /* Realignment styling for sidebar tooltips */
+                [data-framer-name="Side Bar"] a.framer-8vx74n {
+                    position: relative !important;
+                }
+                [data-framer-name="Side Bar"] a.framer-8vx74n > div[data-framer-name] {
+                    position: absolute !important;
+                    top: 50% !important;
+                    left: -15px !important;
+                    transform: translate(-100%, -50%) !important;
+                    margin: 0 !important;
+                    bottom: auto !important;
+                    right: auto !important;
+                    opacity: 0 !important;
+                    pointer-events: none !important;
+                    transition: opacity 0.25s ease-in-out !important;
+                    display: flex !important;
+                    z-index: 99999 !important;
+                }
+                [data-framer-name="Side Bar"] a.framer-8vx74n:hover > div[data-framer-name] {
+                    opacity: 1 !important;
+                }
             \`;
             document.head.appendChild(style);
         }
@@ -534,17 +589,6 @@ htmlFiles.forEach(filePath => {
                 const sectionId = sectionMap[name];
                 linkMap[sectionId] = link;
             }
-            
-            link.addEventListener('click', (e) => {
-                if (name && sectionMap[name]) {
-                    const targetEl = document.getElementById(sectionMap[name]);
-                    if (targetEl) {
-                        e.preventDefault();
-                        targetEl.scrollIntoView({ behavior: 'smooth' });
-                        history.replaceState(null, null, '#' + sectionMap[name]);
-                    }
-                }
-            });
         });
 
         const observerOptions = {
@@ -571,6 +615,56 @@ htmlFiles.forEach(filePath => {
             if (el) observer.observe(el);
         });
     }
+
+    function setupSidebarTooltips() {
+        const sidebar = document.querySelector('[data-framer-name="Side Bar"]');
+        if (!sidebar) return;
+        
+        function performMove() {
+            const sidebarLinks = sidebar.querySelectorAll('a.framer-8vx74n');
+            sidebarLinks.forEach(link => {
+                const name = link.getAttribute('data-framer-name');
+                if (!name) return;
+                
+                const tooltips = sidebar.querySelectorAll('div[data-framer-name]');
+                let tooltip = null;
+                for (const t of tooltips) {
+                    const tName = t.getAttribute('data-framer-name') || '';
+                    if (tName.toLowerCase() === name.toLowerCase() || 
+                        (name.toLowerCase() === 'testimonial' && tName.toLowerCase() === 'testimonial') ||
+                        (name.toLowerCase() === 'works' && tName.toLowerCase() === 'works')) {
+                        tooltip = t;
+                        break;
+                    }
+                }
+                
+                if (tooltip) {
+                    if (name.toLowerCase() === 'testimonial') {
+                        const p = tooltip.querySelector('p');
+                        if (p && p.textContent.trim() !== 'Comments') {
+                            p.textContent = 'Comments';
+                        }
+                    }
+                    if (tooltip.parentElement === sidebar) {
+                        link.appendChild(tooltip);
+                    }
+                }
+            });
+        }
+
+        performMove();
+
+        if (!sidebar._kotaObserver) {
+            const observer = new MutationObserver(() => {
+                observer.disconnect();
+                performMove();
+                observer.observe(sidebar, { childList: true });
+            });
+            observer.observe(sidebar, { childList: true });
+            sidebar._kotaObserver = observer;
+        }
+    }
+
 
     function setupYoutubeCards() {
         debugLog('setupYoutubeCards() starting...');
@@ -667,6 +761,23 @@ htmlFiles.forEach(filePath => {
         if (testimonialSection && testimonialSection.id !== 'testimonial') {
             testimonialSection.id = 'testimonial';
         }
+
+        // Change the testimonials heading/label to "Comments" dynamically to prevent hydration reversion
+        try {
+            if (testimonialSection) {
+                testimonialSection.querySelectorAll('[data-framer-component-type="RichTextContainer"]').forEach(el => {
+                    if (el.innerText) {
+                        el.innerHTML = el.innerHTML
+                            .replace(/Testimonials/g, 'Comments')
+                            .replace(/TESTIMONIALS/g, 'COMMENTS')
+                            .replace(/testimonials/g, 'comments')
+                            .replace(/Testimonial/g, 'Comment')
+                            .replace(/TESTIMONIAL/g, 'COMMENT')
+                            .replace(/testimonial/g, 'comment');
+                    }
+                });
+            }
+        } catch (e) {}
         
         fetch(prefix + "data/comments.json?v=" + Date.now())
             .then(res => res.json())
@@ -925,7 +1036,7 @@ htmlFiles.forEach(filePath => {
         if (!document.getElementById('kota-pricing-css')) {
             const style = document.createElement('style');
             style.id = 'kota-pricing-css';
-            style.innerHTML = `
+            style.innerHTML = \`
                 [data-framer-name="Price"] [data-framer-component-type="RichTextContainer"] {
                     overflow: visible !important;
                     width: auto !important;
@@ -943,7 +1054,7 @@ htmlFiles.forEach(filePath => {
                     height: auto !important;
                     align-items: baseline !important;
                 }
-            `;
+            \`;
             document.head.appendChild(style);
         }
 
@@ -1048,7 +1159,7 @@ htmlFiles.forEach(filePath => {
         if (!document.getElementById('kota-awards-css')) {
             const style = document.createElement('style');
             style.id = 'kota-awards-css';
-            style.innerHTML = `
+            style.innerHTML = \`
                 [data-framer-name="Awards Section"], [data-framer-name="Awards"] { display: none !important; }
                 .award-item {
                     display: flex;
@@ -1366,12 +1477,21 @@ htmlFiles.forEach(filePath => {
         if (!node || node.tagName !== 'A') return;
         const href = node.getAttribute('href') || '';
         const name = node.getAttribute('data-framer-name') || '';
-        if (href.includes('work.html') || name.toLowerCase() === 'works') {
+        const lowerName = name.toLowerCase();
+        if (href.includes('work.html') || lowerName === 'works' || lowerName === 'work') {
             node.setAttribute('href', prefix + 'index.html#work');
-        } else if (href.includes('service.html') || name.toLowerCase() === 'services') {
+        } else if (href.includes('service.html') || lowerName === 'services' || lowerName === 'service') {
             node.setAttribute('href', prefix + 'index.html#service');
-        } else if (href.includes('about.html') || name.toLowerCase() === 'about') {
+        } else if (href.includes('about.html') || lowerName === 'about') {
             node.setAttribute('href', prefix + 'index.html#about');
+        } else if (href.includes('contact.html') || lowerName === 'contact') {
+            node.setAttribute('href', prefix + 'index.html#contact');
+        } else if (href.includes('testimonial.html') || lowerName === 'testimonial' || lowerName === 'testimonials') {
+            node.setAttribute('href', prefix + 'index.html#testimonial');
+        } else if (href.includes('pricing.html') || lowerName === 'pricing') {
+            node.setAttribute('href', prefix + 'index.html#pricing');
+        } else if (href.includes('faq.html') || lowerName === 'faq') {
+            node.setAttribute('href', prefix + 'index.html#faq');
         }
     }
 
